@@ -16,19 +16,20 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
 
 ## ToDos
 - [ ] Features
-    - [ ] List Challenges
-        - [ ] Using a simple bubbles list
-        - [ ] split layout with details
-            - [ ] Preview and on enter select it
+    - [x] List Challenges
+        - [x] Using a simple bubbles list
+    - [ ] footer
+      - [ ] help
     - [ ] Challenge Details
-        - [ ] Render Markdown
-            - [ ] short description
-            - [ ] source-code
-            - [ ] State and timer
-        - [ ] Add extra actions
-            - [ ] Download source & executable
-                - [ ] Using scp
-            - [ ] Spawn a container
+      - [x] Show challenge details
+      - [ ] Render Markdown
+          - [ ] short description
+          - [ ] source-code
+          - [ ] State and timer
+      - [ ] Add extra actions
+          - [ ] Download source & executable
+              - [ ] Using scp
+          - [ ] Spawn a container
     - [ ] Start Challenge
         - [ ] Use a cmd to trigger it
         - [ ] using podman bindings
