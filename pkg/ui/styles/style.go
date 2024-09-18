@@ -28,6 +28,11 @@ type Styles struct {
 		Title lipgloss.Style
 		Body  lipgloss.Style
 	}
+
+	Footer      lipgloss.Style
+	HelpKey     lipgloss.Style
+	HelpValue   lipgloss.Style
+	HelpDivider lipgloss.Style
 }
 
 func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
@@ -82,6 +87,21 @@ func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
 
 	style.ChallengeDetail.Body = renderer.NewStyle().
 		Margin(1, 0)
+
+	style.Footer = renderer.NewStyle().
+		MarginTop(1).
+		Padding(0, 1).
+		Height(1)
+
+	style.HelpKey = renderer.NewStyle().
+		Foreground(lipgloss.Color("241"))
+
+	style.HelpValue = renderer.NewStyle().
+		Foreground(lipgloss.Color("239"))
+
+	style.HelpDivider = renderer.NewStyle().
+		Foreground(lipgloss.Color("237")).
+		SetString(" • ")
 
 	return style
 }

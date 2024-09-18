@@ -3,8 +3,10 @@ package ui
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"hacktopber2024/pkg/model"
 	"hacktopber2024/pkg/ui/common"
+	"hacktopber2024/pkg/ui/components/footer"
 	"hacktopber2024/pkg/ui/components/selector"
 	"hacktopber2024/pkg/ui/pages/challenge_detail"
 	"hacktopber2024/pkg/ui/pages/challenges"
@@ -22,26 +24,36 @@ type Ui struct {
 	common     common.Common
 	pages      []common.Page
 	activePage page
+	footer     *footer.Footer
+	showFooter bool
 }
 
 func NewUi(c common.Common) *Ui {
-	return &Ui{
+	ui := &Ui{
 		common:     c,
 		pages:      make([]common.Page, 2),
 		activePage: challengesPage,
+		showFooter: true,
 	}
+
+	ui.footer = footer.New(c, ui)
+	return ui
 }
 
 func (ui *Ui) getMargins() (wm, hm int) {
 	style := ui.common.Styles.App
 	wm = style.GetHorizontalFrameSize()
 	hm = style.GetVerticalFrameSize()
+	if ui.showFooter {
+		hm += ui.footer.Height()
+	}
 	return
 }
 
 func (ui *Ui) SetSize(width, height int) {
 	ui.common.SetSize(width, height)
 	wm, hm := ui.getMargins()
+	ui.footer.SetSize(width-wm, height-hm)
 	for _, p := range ui.pages {
 		if p != nil {
 			p.SetSize(width-wm, height-hm)
@@ -85,6 +97,8 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return ui, tea.Quit
 		case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.common.KeyMap.Back):
 			ui.activePage = challengesPage
+		case key.Matches(msg, ui.common.KeyMap.Help):
+			cmds = append(cmds, footer.ToggleFooterCmd)
 		}
 	case selector.SelectMsg:
 		switch msg.IdentifiableItem.(type) {
@@ -94,22 +108,58 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case challenge_detail.SelectChallengeMsg:
 		ui.activePage = challengeDetailsPage
+	case footer.ToggleFooterMsg:
+		ui.footer.SetShowAll(!ui.footer.ShowAll())
+		ui.showFooter = !ui.showFooter
 	}
+	f, cmd := ui.footer.Update(msg)
+	ui.footer = f.(*footer.Footer)
+	if cmd != nil {
+		cmds = append(cmds, cmd)
+	}
+
 	m, cmd := ui.pages[ui.activePage].Update(msg)
 	ui.pages[ui.activePage] = m.(common.Page)
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
 
+	ui.SetSize(ui.common.Width, ui.common.Height)
 	return ui, tea.Batch(cmds...)
 }
 
 func (ui *Ui) View() string {
-	return ui.common.Styles.App.Render(ui.pages[ui.activePage].View())
+	view := ui.pages[ui.activePage].View()
+	if ui.showFooter {
+		view = lipgloss.JoinVertical(lipgloss.Left, view, ui.footer.View())
+	}
+	return ui.common.Styles.App.Render(view)
 }
 
 func (ui *Ui) selectChallengeCmd(challenge model.Challenge) tea.Cmd {
 	return func() tea.Msg {
 		return challenge_detail.SelectChallengeMsg(challenge)
 	}
+}
+
+func (ui *Ui) ShortHelp() []key.Binding {
+	bindings := make([]key.Binding, 0)
+	bindings = append(bindings, ui.pages[ui.activePage].ShortHelp()...)
+	bindings = append(bindings, ui.common.KeyMap.Help, ui.common.KeyMap.Quit)
+
+	return bindings
+}
+
+func (ui *Ui) FullHelp() [][]key.Binding {
+	bindings := make([][]key.Binding, 0)
+
+	bindings = append(bindings, ui.pages[ui.activePage].FullHelp()...)
+	bindings = append(bindings,
+		[]key.Binding{
+			ui.common.KeyMap.Help,
+			ui.common.KeyMap.Quit,
+		},
+	)
+
+	return bindings
 }

@@ -18,8 +18,8 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
 - [ ] Features
     - [x] List Challenges
         - [x] Using a simple bubbles list
-    - [ ] footer
-      - [ ] help
+    - [x] footer
+      - [x] help
     - [ ] Challenge Details
       - [x] Show challenge details
       - [ ] Render Markdown

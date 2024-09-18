@@ -7,6 +7,7 @@ type KeyMap struct {
 	UpDown key.Binding
 	Select key.Binding
 	Back   key.Binding
+	Help   key.Binding
 }
 
 func DefaultKeyMap() *KeyMap {
@@ -31,7 +32,7 @@ func DefaultKeyMap() *KeyMap {
 			"j",
 		),
 		key.WithHelp(
-			"↑↓",
+			"↑↓ j/k",
 			"navigate",
 		),
 	)
@@ -48,6 +49,16 @@ func DefaultKeyMap() *KeyMap {
 		key.WithHelp(
 			"esc",
 			"back",
+		),
+	)
+
+	keymap.Help = key.NewBinding(
+		key.WithKeys(
+			"?",
+		),
+		key.WithHelp(
+			"?",
+			"toggle help",
 		),
 	)
 
