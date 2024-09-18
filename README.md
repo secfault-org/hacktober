@@ -38,6 +38,8 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
         - [ ] Stack
         - [ ] Format-String explaination
         - [ ] Heap
+    - [ ] Connect via SSH
+      - [ ] User by public key hash
     - [ ] Earn stars
         - [ ] Keep starts after relogin
         - [ ] Identify user by publickey
