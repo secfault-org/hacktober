@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
-	"hacktopber2024/pkg/ui"
-	"hacktopber2024/pkg/ui/common"
+	"github.com/secfault-org/hacktober/pkg/ui"
+	"github.com/secfault-org/hacktober/pkg/ui/common"
 	"os"
 )
 

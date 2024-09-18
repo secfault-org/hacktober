@@ -1,4 +1,4 @@
-module hacktopber2024
+module github.com/secfault-org/hacktober
 
 go 1.23.1
 

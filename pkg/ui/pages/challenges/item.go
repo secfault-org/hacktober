@@ -6,8 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/dustin/go-humanize"
-	"hacktopber2024/pkg/model"
-	"hacktopber2024/pkg/ui/common"
+	"github.com/secfault-org/hacktober/pkg/model"
+	"github.com/secfault-org/hacktober/pkg/ui/common"
 	"io"
 	"strings"
 )

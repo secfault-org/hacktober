@@ -3,8 +3,8 @@ package common
 import (
 	"context"
 	"github.com/charmbracelet/lipgloss"
-	"hacktopber2024/pkg/ui/keymap"
-	"hacktopber2024/pkg/ui/styles"
+	"github.com/secfault-org/hacktober/pkg/ui/keymap"
+	"github.com/secfault-org/hacktober/pkg/ui/styles"
 )
 
 type Common struct {

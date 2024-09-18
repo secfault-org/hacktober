@@ -3,8 +3,8 @@ package challenge_detail
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"hacktopber2024/pkg/model"
-	"hacktopber2024/pkg/ui/common"
+	"github.com/secfault-org/hacktober/pkg/model"
+	"github.com/secfault-org/hacktober/pkg/ui/common"
 )
 
 type SelectChallengeMsg model.Challenge

@@ -4,12 +4,12 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"hacktopber2024/pkg/model"
-	"hacktopber2024/pkg/ui/common"
-	"hacktopber2024/pkg/ui/components/footer"
-	"hacktopber2024/pkg/ui/components/selector"
-	"hacktopber2024/pkg/ui/pages/challenge_detail"
-	"hacktopber2024/pkg/ui/pages/challenges"
+	"github.com/secfault-org/hacktober/pkg/model"
+	"github.com/secfault-org/hacktober/pkg/ui/common"
+	"github.com/secfault-org/hacktober/pkg/ui/components/footer"
+	"github.com/secfault-org/hacktober/pkg/ui/components/selector"
+	"github.com/secfault-org/hacktober/pkg/ui/pages/challenge_detail"
+	"github.com/secfault-org/hacktober/pkg/ui/pages/challenges"
 	"time"
 )
 
