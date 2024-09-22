@@ -10,7 +10,6 @@ import (
 	"github.com/secfault-org/hacktober/pkg/ui/components/selector"
 	"github.com/secfault-org/hacktober/pkg/ui/pages/challenge_detail"
 	"github.com/secfault-org/hacktober/pkg/ui/pages/challenges"
-	"time"
 )
 
 type page int
@@ -62,13 +61,7 @@ func (ui *Ui) SetSize(width, height int) {
 }
 
 func (ui *Ui) Init() tea.Cmd {
-	items := []selector.IdentifiableItem{
-		challenges.Item{Challenge: model.Challenge{Name: "Challenge 1", Description: "Description 1", ReleaseDate: time.Now().Add(-12 * time.Hour)}},
-		challenges.Item{Challenge: model.Challenge{Name: "Challenge 2", Description: "Description 2", ReleaseDate: time.Now().Add(12 * time.Hour)}},
-		challenges.Item{Challenge: model.Challenge{Name: "Challenge 3", Description: "Description 3", ReleaseDate: time.Now().Add(48 * time.Hour)}},
-		challenges.Item{Challenge: model.Challenge{Name: "Challenge 4", Description: "Description 4", ReleaseDate: time.Now().Add(96 * time.Hour)}},
-	}
-	ui.pages[challengesPage] = challenges.New(ui.common, items)
+	ui.pages[challengesPage] = challenges.New(ui.common)
 	ui.pages[challengeDetailsPage] = challenge_detail.New(ui.common)
 	ui.SetSize(ui.common.Width, ui.common.Height)
 	cmds := make([]tea.Cmd, 0)

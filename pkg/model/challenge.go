@@ -8,6 +8,7 @@ type Challenge struct {
 	Id          string
 	Name        string
 	Description string
+	Text        string
 	ReleaseDate time.Time
 }
 

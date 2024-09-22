@@ -13,11 +13,11 @@ type ChallengePage struct {
 	selector *selector.Selector
 }
 
-func New(common common.Common, items []selector.IdentifiableItem) *ChallengePage {
+func New(common common.Common) *ChallengePage {
 
 	list := selector.New(
 		common,
-		items,
+		[]selector.IdentifiableItem{},
 		NewItemDelegate(&common),
 	)
 
@@ -34,7 +34,21 @@ func New(common common.Common, items []selector.IdentifiableItem) *ChallengePage
 }
 
 func (c *ChallengePage) Init() tea.Cmd {
-	return c.selector.Init()
+	ctx := c.common.Context()
+	challenges, err := c.common.Repo().GetAllChallenges(ctx)
+	if err != nil {
+		return common.ErrorCmd(err)
+	}
+
+	items := make([]selector.IdentifiableItem, len(challenges))
+	for i, it := range challenges {
+		items[i] = Item{Challenge: it}
+	}
+
+	return tea.Batch(
+		c.selector.Init(),
+		c.selector.SetItems(items),
+	)
 }
 
 func (c *ChallengePage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

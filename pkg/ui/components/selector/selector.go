@@ -77,3 +77,11 @@ func (s *Selector) SetSize(width, height int) {
 	s.common.SetSize(width, height)
 	s.Model.SetSize(width, height)
 }
+
+func (s *Selector) SetItems(items []IdentifiableItem) tea.Cmd {
+	listItems := make([]list.Item, len(items))
+	for i, item := range items {
+		listItems[i] = item
+	}
+	return s.Model.SetItems(listItems)
+}
