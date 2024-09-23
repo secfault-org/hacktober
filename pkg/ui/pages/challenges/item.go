@@ -5,11 +5,11 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/dustin/go-humanize"
 	"github.com/secfault-org/hacktober/pkg/model"
 	"github.com/secfault-org/hacktober/pkg/ui/common"
 	"io"
 	"strings"
+	"time"
 )
 
 type Item struct {
@@ -57,7 +57,7 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		title += " 🔒"
 	}
 
-	releaseStr := fmt.Sprintf(" Release: %s", humanize.Time(item.Challenge.ReleaseDate))
+	releaseStr := fmt.Sprintf(" Release: %s", item.Challenge.ReleaseDate.Format(time.DateOnly))
 	if m.Width()-styles.Base.GetHorizontalFrameSize()-lipgloss.Width(releaseStr) <= 0 {
 		releaseStr = ""
 	}

@@ -3,11 +3,13 @@ package keymap
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	Quit   key.Binding
-	UpDown key.Binding
-	Select key.Binding
-	Back   key.Binding
-	Help   key.Binding
+	Quit       key.Binding
+	UpDown     key.Binding
+	GotoTop    key.Binding
+	GotoBottom key.Binding
+	Select     key.Binding
+	Back       key.Binding
+	Help       key.Binding
 }
 
 func DefaultKeyMap() *KeyMap {
@@ -34,6 +36,28 @@ func DefaultKeyMap() *KeyMap {
 		key.WithHelp(
 			"↑↓ j/k",
 			"navigate",
+		),
+	)
+
+	keymap.GotoTop = key.NewBinding(
+		key.WithKeys(
+			"home",
+			"g",
+		),
+		key.WithHelp(
+			"g/home",
+			"goto top",
+		),
+	)
+
+	keymap.GotoBottom = key.NewBinding(
+		key.WithKeys(
+			"end",
+			"G",
+		),
+		key.WithHelp(
+			"G/end",
+			"goto bottom",
 		),
 	)
 

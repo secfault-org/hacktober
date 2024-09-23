@@ -66,9 +66,9 @@ func readChallenge(basedir string, challengeDir string) (model.Challenge, error)
 	}
 
 	return model.Challenge{
-		Name:        challengeJson.Title,
-		Description: challengeJson.ShortDesc,
-		Text:        string(text),
-		ReleaseDate: releaseDate,
+		Name:              challengeJson.Title,
+		Description:       challengeJson.ShortDesc,
+		ChallengeMarkdown: string(text),
+		ReleaseDate:       releaseDate,
 	}, nil
 }

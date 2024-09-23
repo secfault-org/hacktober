@@ -5,11 +5,11 @@ import (
 )
 
 type Challenge struct {
-	Id          string
-	Name        string
-	Description string
-	Text        string
-	ReleaseDate time.Time
+	Id                string
+	Name              string
+	Description       string
+	ChallengeMarkdown string
+	ReleaseDate       time.Time
 }
 
 func (c Challenge) Locked() bool {
