@@ -22,13 +22,14 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
       - [x] help
     - [ ] Challenge Details
       - [x] Show challenge details
-      - [ ] Render Markdown
-          - [ ] short description
-          - [ ] source-code
-          - [ ] State and timer
+      - [x] Render Markdown
+          - [x] short description
+          - [x] source-code
+      - [ ] State and timer, statusbar?
       - [ ] Add extra actions
           - [ ] Download source & executable
               - [ ] Using scp
+                - [ ] cannot be used directly. Use copy command and scp middleware
           - [ ] Spawn a container
     - [ ] Start Challenge
         - [ ] Use a cmd to trigger it
@@ -38,7 +39,7 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
         - [ ] Stack
         - [ ] Format-String explaination
         - [ ] Heap
-    - [ ] Connect via SSH
+    - [x] Connect via SSH
       - [ ] User by public key hash
     - [ ] Earn stars
         - [ ] Keep starts after relogin
