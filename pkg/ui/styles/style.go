@@ -29,6 +29,13 @@ type Styles struct {
 		Body  lipgloss.Style
 	}
 
+	Statusbar struct {
+		Base    lipgloss.Style
+		Help    lipgloss.Style
+		Info    lipgloss.Style
+		Spinner lipgloss.Style
+	}
+
 	Footer      lipgloss.Style
 	HelpKey     lipgloss.Style
 	HelpValue   lipgloss.Style
@@ -40,7 +47,7 @@ func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
 	style := new(Styles)
 
 	style.App = renderer.NewStyle().
-		Margin(1, 2)
+		Margin(0, 0)
 
 	style.NoContent = renderer.NewStyle().
 		MarginTop(1).
@@ -87,6 +94,24 @@ func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
 
 	style.ChallengeDetail.Body = renderer.NewStyle().
 		Margin(1, 0)
+
+	style.Statusbar.Base = renderer.NewStyle().
+		Height(1)
+
+	style.Statusbar.Spinner = renderer.NewStyle().
+		Padding(0, 1).
+		Foreground(lipgloss.Color("255")).
+		Background(lipgloss.Color("33"))
+
+	style.Statusbar.Info = renderer.NewStyle().
+		Padding(0, 1).
+		Background(lipgloss.Color("235")).
+		Foreground(lipgloss.Color("243"))
+
+	style.Statusbar.Help = renderer.NewStyle().
+		Padding(0, 1).
+		Foreground(lipgloss.Color("243")).
+		Background(lipgloss.Color("237"))
 
 	style.Footer = renderer.NewStyle().
 		MarginTop(1).

@@ -3,7 +3,6 @@ package challenges
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/pkg/ui/common"
 	"github.com/secfault-org/hacktober/pkg/ui/components/selector"
 )
@@ -64,16 +63,17 @@ func (c *ChallengePage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (c *ChallengePage) View() string {
+	wm, hm := c.getMargins()
 	ss := c.common.Renderer.NewStyle().
-		Width(c.common.Width).
-		Height(c.common.Height)
-	view := ss.Render(c.selector.View())
-	return lipgloss.JoinVertical(lipgloss.Left, view)
+		Width(c.common.Width-wm).
+		Height(c.common.Height-hm).
+		Margin(2, 1, 0, 1)
+	return ss.Render(c.selector.View())
 }
 
 func (c *ChallengePage) getMargins() (wm, hm int) {
-	wm = 0
-	hm = 0
+	wm = 2
+	hm = 2
 	return
 }
 
@@ -98,6 +98,7 @@ func (c *ChallengePage) FullHelp() [][]key.Binding {
 	bindings = append(bindings, []key.Binding{
 		c.selector.KeyMap.CursorUp,
 		c.selector.KeyMap.CursorDown,
+		c.common.KeyMap.Select,
 	})
 
 	return bindings

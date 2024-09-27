@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/pkg/model"
+	"github.com/secfault-org/hacktober/pkg/ui/commands"
 	"github.com/secfault-org/hacktober/pkg/ui/common"
 	"github.com/secfault-org/hacktober/pkg/ui/components/footer"
 	"github.com/secfault-org/hacktober/pkg/ui/components/selector"
@@ -90,8 +91,10 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return ui, tea.Quit
 		case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.common.KeyMap.Back):
 			ui.activePage = challengesPage
-		case key.Matches(msg, ui.common.KeyMap.Help):
+		case key.Matches(msg, ui.common.KeyMap.HideFooter):
 			cmds = append(cmds, footer.ToggleFooterCmd)
+		case key.Matches(msg, ui.common.KeyMap.Help):
+			cmds = append(cmds, footer.ToggleHelpCmd)
 		}
 	case selector.SelectMsg:
 		switch msg.IdentifiableItem.(type) {
@@ -99,11 +102,12 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			challenge := msg.IdentifiableItem.(challenges.Item).Challenge
 			cmds = append(cmds, ui.selectChallengeCmd(challenge))
 		}
-	case challenge_detail.SelectChallengeMsg:
+	case commands.SelectChallengeMsg:
 		ui.activePage = challengeDetailsPage
 	case footer.ToggleFooterMsg:
-		ui.footer.SetShowAll(!ui.footer.ShowAll())
 		ui.showFooter = !ui.showFooter
+	case footer.ToggleHelpMsg:
+		ui.footer.SetShowAll(!ui.footer.ShowAll())
 	}
 	f, cmd := ui.footer.Update(msg)
 	ui.footer = f.(*footer.Footer)
@@ -131,14 +135,14 @@ func (ui *Ui) View() string {
 
 func (ui *Ui) selectChallengeCmd(challenge model.Challenge) tea.Cmd {
 	return func() tea.Msg {
-		return challenge_detail.SelectChallengeMsg(challenge)
+		return commands.SelectChallengeMsg(challenge)
 	}
 }
 
 func (ui *Ui) ShortHelp() []key.Binding {
 	bindings := make([]key.Binding, 0)
 	bindings = append(bindings, ui.pages[ui.activePage].ShortHelp()...)
-	bindings = append(bindings, ui.common.KeyMap.Help, ui.common.KeyMap.Quit)
+	bindings = append(bindings, ui.common.KeyMap.Help, ui.common.KeyMap.HideFooter, ui.common.KeyMap.Quit)
 
 	return bindings
 }
@@ -150,6 +154,7 @@ func (ui *Ui) FullHelp() [][]key.Binding {
 	bindings = append(bindings,
 		[]key.Binding{
 			ui.common.KeyMap.Help,
+			ui.common.KeyMap.HideFooter,
 			ui.common.KeyMap.Quit,
 		},
 	)

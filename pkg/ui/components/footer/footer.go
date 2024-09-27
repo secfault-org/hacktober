@@ -9,6 +9,7 @@ import (
 )
 
 type ToggleFooterMsg struct{}
+type ToggleHelpMsg struct{}
 
 type Footer struct {
 	common common.Common
@@ -78,4 +79,8 @@ func (f *Footer) Height() int {
 
 func ToggleFooterCmd() tea.Msg {
 	return ToggleFooterMsg{}
+}
+
+func ToggleHelpCmd() tea.Msg {
+	return ToggleHelpMsg{}
 }
