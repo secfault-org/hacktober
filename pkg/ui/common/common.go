@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/pkg/backend"
+	"github.com/secfault-org/hacktober/pkg/container"
 	"github.com/secfault-org/hacktober/pkg/repository"
 	"github.com/secfault-org/hacktober/pkg/ui/keymap"
 	"github.com/secfault-org/hacktober/pkg/ui/styles"
@@ -15,9 +16,10 @@ type Common struct {
 	Styles        *styles.Styles
 	KeyMap        *keymap.KeyMap
 	Renderer      *lipgloss.Renderer
+	Backend       *backend.Backend
 }
 
-func NewCommon(ctx context.Context, out *lipgloss.Renderer, width, height int) Common {
+func NewCommon(ctx context.Context, out *lipgloss.Renderer, width, height int, b *backend.Backend) Common {
 	if ctx == nil {
 		ctx = context.TODO()
 	}
@@ -28,6 +30,7 @@ func NewCommon(ctx context.Context, out *lipgloss.Renderer, width, height int) C
 		Renderer: out,
 		Styles:   styles.DefaultStyles(out),
 		KeyMap:   keymap.DefaultKeyMap(),
+		Backend:  b,
 	}
 }
 
@@ -37,11 +40,11 @@ func (c *Common) SetSize(width, height int) {
 }
 
 func (c *Common) Repo() repository.Repository {
-	return c.Backend().Repo
+	return c.Backend.Repo
 }
 
-func (c *Common) Backend() *backend.Backend {
-	return backend.FromContext(c.ctx)
+func (c *Common) ContainerService() container.Service {
+	return c.Backend.ContainerService
 }
 
 func (c *Common) Context() context.Context {

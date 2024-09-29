@@ -69,10 +69,15 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	pty, _, _ := s.Pty()
 	ctx := context.Background()
 	containerService := podman.NewContainerService(ctx)
-	ctx = backend.WithContext(ctx, backend.NewBackend(ctx, repository.NewRepository(ctx, "challenges/2024"), containerService))
+	ctx, err := containerService.Connect(ctx)
+	if err != nil {
+		log.Error("Could not connect to Podman", "error", err)
+		return nil, nil
+	}
+	b := backend.NewBackend(ctx, repository.NewRepository(ctx, "challenges/2024"), containerService)
 
 	renderer := bm.MakeRenderer(s)
-	c := common.NewCommon(ctx, renderer, pty.Window.Width, pty.Window.Height)
+	c := common.NewCommon(ctx, renderer, pty.Window.Width, pty.Window.Height, b)
 
 	app := ui.NewUi(c)
 
