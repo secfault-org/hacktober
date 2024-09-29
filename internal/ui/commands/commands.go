@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/secfault-org/hacktober/pkg/container"
-	"github.com/secfault-org/hacktober/pkg/model"
+	"github.com/secfault-org/hacktober/internal/container"
+	"github.com/secfault-org/hacktober/internal/model"
 )
 
 type SelectChallengeMsg model.Challenge

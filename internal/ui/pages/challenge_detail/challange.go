@@ -6,12 +6,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/pkg/container"
-	"github.com/secfault-org/hacktober/pkg/model"
-	"github.com/secfault-org/hacktober/pkg/ui/commands"
-	"github.com/secfault-org/hacktober/pkg/ui/common"
-	"github.com/secfault-org/hacktober/pkg/ui/components/statusbar"
-	"github.com/secfault-org/hacktober/pkg/ui/components/viewport"
+	"github.com/secfault-org/hacktober/internal/container"
+	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/ui/commands"
+	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
+	"github.com/secfault-org/hacktober/internal/ui/components/viewport"
 )
 
 const (

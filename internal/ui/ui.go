@@ -4,13 +4,13 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/pkg/model"
-	"github.com/secfault-org/hacktober/pkg/ui/commands"
-	"github.com/secfault-org/hacktober/pkg/ui/common"
-	"github.com/secfault-org/hacktober/pkg/ui/components/footer"
-	"github.com/secfault-org/hacktober/pkg/ui/components/selector"
-	"github.com/secfault-org/hacktober/pkg/ui/pages/challenge_detail"
-	"github.com/secfault-org/hacktober/pkg/ui/pages/challenges"
+	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/ui/commands"
+	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/components/footer"
+	"github.com/secfault-org/hacktober/internal/ui/components/selector"
+	"github.com/secfault-org/hacktober/internal/ui/pages/challenge_detail"
+	"github.com/secfault-org/hacktober/internal/ui/pages/challenges"
 )
 
 type page int

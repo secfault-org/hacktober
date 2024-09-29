@@ -3,8 +3,8 @@ package backend
 import (
 	"context"
 	"github.com/charmbracelet/log"
-	"github.com/secfault-org/hacktober/pkg/container"
-	"github.com/secfault-org/hacktober/pkg/repository"
+	"github.com/secfault-org/hacktober/internal/container"
+	"github.com/secfault-org/hacktober/internal/repository"
 )
 
 type Backend struct {

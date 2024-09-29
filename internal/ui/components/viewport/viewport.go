@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/secfault-org/hacktober/pkg/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/common"
 )
 
 type Viewport struct {

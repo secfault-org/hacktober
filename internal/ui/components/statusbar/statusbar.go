@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/pkg/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/common"
 )
 
 type Model struct {

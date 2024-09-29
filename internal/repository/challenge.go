@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/secfault-org/hacktober/pkg/model"
+	"github.com/secfault-org/hacktober/internal/model"
 )
 
 type ChallengeRepository interface {

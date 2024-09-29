@@ -3,8 +3,8 @@ package challenges
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/secfault-org/hacktober/pkg/ui/common"
-	"github.com/secfault-org/hacktober/pkg/ui/components/selector"
+	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/components/selector"
 )
 
 type ChallengePage struct {

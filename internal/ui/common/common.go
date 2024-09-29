@@ -3,11 +3,11 @@ package common
 import (
 	"context"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/pkg/backend"
-	"github.com/secfault-org/hacktober/pkg/container"
-	"github.com/secfault-org/hacktober/pkg/repository"
-	"github.com/secfault-org/hacktober/pkg/ui/keymap"
-	"github.com/secfault-org/hacktober/pkg/ui/styles"
+	"github.com/secfault-org/hacktober/internal/backend"
+	"github.com/secfault-org/hacktober/internal/container"
+	"github.com/secfault-org/hacktober/internal/repository"
+	"github.com/secfault-org/hacktober/internal/ui/keymap"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 )
 
 type Common struct {
