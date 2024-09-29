@@ -10,6 +10,7 @@ type Challenge struct {
 	Description       string
 	ChallengeMarkdown string
 	ReleaseDate       time.Time
+	ContainerImage    string
 }
 
 func (c Challenge) Locked() bool {

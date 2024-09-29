@@ -2,15 +2,16 @@ package challenge_detail
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/secfault-org/hacktober/pkg/container"
 	"github.com/secfault-org/hacktober/pkg/model"
 	"github.com/secfault-org/hacktober/pkg/ui/commands"
 	"github.com/secfault-org/hacktober/pkg/ui/common"
 	"github.com/secfault-org/hacktober/pkg/ui/components/statusbar"
 	"github.com/secfault-org/hacktober/pkg/ui/components/viewport"
-	"time"
 )
 
 const (
@@ -111,18 +112,24 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		c.selectedChallenge = model.Challenge(msg)
 		cmds = append(cmds,
 			c.Init(),
+			c.statusbar.Init(),
 		)
 	case commands.ContainerSpawnedMsg:
 		c.ContainerState = msg.State
-		cmds = append(cmds, spawnContainerLoading(false, ""))
+		c.statusbar.SetInfo("Container running")
+		c.statusbar.SetSpinner(spinner.Globe)
+	case commands.ContainerErrorMsg:
+		c.common.Backend.Logger().Error(msg.Error())
+		c.statusbar.SetInfo(msg.Error())
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, c.common.KeyMap.Back):
 			cmds = append(cmds, goBackCmd)
 		case key.Matches(msg, c.common.KeyMap.SpawnContainer) && c.ContainerState == ContainerStateStopped:
+			c.statusbar.SetInfo("Spawning container...")
+			c.statusbar.SetSpinner(spinner.Dot)
 			cmds = append(cmds,
-				spawnContainerLoading(true, "Spawning container..."),
-				spawnContainerCmd(c.selectedChallenge),
+				spawnContainerCmd(c.common, c.selectedChallenge),
 			)
 		}
 	case tea.WindowSizeMsg:
@@ -157,22 +164,24 @@ func (c *ChallengeDetailPage) View() string {
 	return s.Render(view)
 }
 
+func spawnContainer(cmn common.Common, challenge model.Challenge) (*container.Id, error) {
+	return cmn.ContainerService().StartContainer(cmn.Context(), challenge.ContainerImage, 1337)
+}
+
 func goBackCmd() tea.Msg {
 	return commands.GoBackMsg{}
 }
 
-func spawnContainerLoading(loading bool, msg string) tea.Cmd {
+func spawnContainerCmd(common common.Common, challenge model.Challenge) tea.Cmd {
 	return func() tea.Msg {
-		return commands.ContainerLoadingMsg{Loading: loading, Message: msg}
-	}
-}
-
-func spawnContainerCmd(challenge model.Challenge) tea.Cmd {
-	return func() tea.Msg {
-		time.Sleep(2 * time.Second)
+		id, err := spawnContainer(common, challenge)
+		if err != nil {
+			return commands.ContainerErrorMsg(err)
+		}
 		return commands.ContainerSpawnedMsg{
-			Challenge: challenge,
-			State:     ContainerStateRunning,
+			ContainerId: *id,
+			Challenge:   challenge,
+			State:       ContainerStateRunning,
 		}
 	}
 }

@@ -1,6 +1,9 @@
 package commands
 
-import "github.com/secfault-org/hacktober/pkg/model"
+import (
+	"github.com/secfault-org/hacktober/pkg/container"
+	"github.com/secfault-org/hacktober/pkg/model"
+)
 
 type SelectChallengeMsg model.Challenge
 type ContainerLoadingMsg struct {
@@ -9,6 +12,8 @@ type ContainerLoadingMsg struct {
 }
 type GoBackMsg struct{}
 type ContainerSpawnedMsg struct {
-	model.Challenge
-	State int
+	ContainerId container.Id
+	Challenge   model.Challenge
+	State       int
 }
+type ContainerErrorMsg error

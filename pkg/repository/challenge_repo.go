@@ -15,11 +15,12 @@ type challengeRepo struct {
 }
 
 type challengeInfo struct {
-	Title       string `json:"title"`
-	ShortDesc   string `json:"shortDescription"`
-	DescFile    string `json:"descriptionFile"`
-	Difficulty  uint8  `json:"difficulty"`
-	ReleaseDate string `json:"releaseDate"`
+	Title          string `json:"title"`
+	ShortDesc      string `json:"shortDescription"`
+	DescFile       string `json:"descriptionFile"`
+	Difficulty     uint8  `json:"difficulty"`
+	ReleaseDate    string `json:"releaseDate"`
+	ContainerImage string `json:"containerImage"`
 }
 
 var _ ChallengeRepository = (*challengeRepo)(nil)
@@ -70,5 +71,6 @@ func readChallenge(basedir string, challengeDir string) (model.Challenge, error)
 		Description:       challengeJson.ShortDesc,
 		ChallengeMarkdown: string(text),
 		ReleaseDate:       releaseDate,
+		ContainerImage:    challengeJson.ContainerImage,
 	}, nil
 }

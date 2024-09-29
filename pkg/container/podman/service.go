@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	nettypes "github.com/containers/common/libnetwork/types"
+	"github.com/containers/podman/v5/pkg/bindings"
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 	"github.com/containers/podman/v5/pkg/bindings/images"
 	"github.com/containers/podman/v5/pkg/specgen"
 	"github.com/secfault-org/hacktober/pkg/container"
+	"os"
 	"strconv"
 )
 
@@ -16,6 +18,21 @@ type Service struct {
 
 func NewContainerService(ctx context.Context) *Service {
 	return &Service{}
+}
+
+func (s *Service) Connect(ctx context.Context) (context.Context, error) {
+	sock_dir := os.Getenv("XDG_RUNTIME_DIR")
+	if sock_dir == "" {
+		sock_dir = "/var/run"
+	}
+	socket := "unix:" + sock_dir + "/podman/podman.sock"
+
+	// Connect to Podman socket
+	ctx, err := bindings.NewConnection(ctx, socket)
+	if err != nil {
+		return nil, err
+	}
+	return ctx, nil
 }
 
 func (s *Service) PullImage(ctx context.Context, image string) error {

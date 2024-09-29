@@ -21,3 +21,7 @@ func NewBackend(ctx context.Context, repo repository.Repository, containerServic
 		logger:           logger,
 	}
 }
+
+func (b *Backend) Logger() *log.Logger {
+	return b.logger
+}

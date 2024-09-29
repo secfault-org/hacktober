@@ -4,7 +4,6 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/pkg/ui/commands"
 	"github.com/secfault-org/hacktober/pkg/ui/common"
 )
 
@@ -39,12 +38,6 @@ func (bar *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		bar.SetSize(msg.Width, msg.Height)
-	case commands.ContainerLoadingMsg:
-		bar.showSpinner = msg.Loading
-		bar.info = msg.Message
-		if msg.Loading {
-			return bar, bar.spinner.Tick
-		}
 	}
 	var cmd tea.Cmd
 	bar.spinner, cmd = bar.spinner.Update(msg)
@@ -75,4 +68,17 @@ func (bar *Model) View() string {
 				help,
 			),
 		)
+}
+
+func (bar *Model) SetInfo(info string) {
+	bar.info = info
+}
+
+func (bar *Model) SetSpinner(spinner spinner.Spinner) {
+	bar.showSpinner = true
+	bar.spinner.Spinner = spinner
+}
+
+func (bar *Model) HideSpinner() {
+	bar.showSpinner = false
 }
