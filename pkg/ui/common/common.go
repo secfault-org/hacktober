@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/secfault-org/hacktober/pkg/backend"
 	"github.com/secfault-org/hacktober/pkg/repository"
 	"github.com/secfault-org/hacktober/pkg/ui/keymap"
 	"github.com/secfault-org/hacktober/pkg/ui/styles"
@@ -36,7 +37,11 @@ func (c *Common) SetSize(width, height int) {
 }
 
 func (c *Common) Repo() repository.Repository {
-	return repository.FromContext(c.ctx)
+	return c.Backend().Repo
+}
+
+func (c *Common) Backend() *backend.Backend {
+	return backend.FromContext(c.ctx)
 }
 
 func (c *Common) Context() context.Context {

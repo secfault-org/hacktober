@@ -3,5 +3,6 @@
   "shortDescription": "Get into stack based overflows",
   "descriptionFile": "description.md",
   "difficulty": 1,
-  "releaseDate": "2024-10-01"
+  "releaseDate": "2024-10-01",
+  "containerImage": "hacktober2024_challenge_01"
 }

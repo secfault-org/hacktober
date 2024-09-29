@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/wish/activeterm"
 	bm "github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
+	"github.com/secfault-org/hacktober/pkg/backend"
+	"github.com/secfault-org/hacktober/pkg/container/podman"
 	"github.com/secfault-org/hacktober/pkg/repository"
 	"github.com/secfault-org/hacktober/pkg/ui"
 	"github.com/secfault-org/hacktober/pkg/ui/common"
@@ -66,7 +68,8 @@ func main() {
 func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	pty, _, _ := s.Pty()
 	ctx := context.Background()
-	ctx = repository.WithContext(ctx, repository.NewRepository(ctx, "challenges/2024"))
+	containerService := podman.NewContainerService(ctx)
+	ctx = backend.WithContext(ctx, backend.NewBackend(ctx, repository.NewRepository(ctx, "challenges/2024"), containerService))
 
 	renderer := bm.MakeRenderer(s)
 	c := common.NewCommon(ctx, renderer, pty.Window.Width, pty.Window.Height)
