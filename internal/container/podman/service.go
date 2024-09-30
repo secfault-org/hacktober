@@ -14,10 +14,13 @@ import (
 )
 
 type Service struct {
+	runningContainer *container.Container
 }
 
 func NewContainerService(ctx context.Context) *Service {
-	return &Service{}
+	return &Service{
+		runningContainer: nil,
+	}
 }
 
 func (s *Service) Connect(ctx context.Context) (context.Context, error) {
@@ -43,7 +46,10 @@ func (s *Service) PullImage(ctx context.Context, image string) error {
 	return nil
 }
 
-func (s *Service) StartContainer(ctx context.Context, image string, exposedContainerPort container.Port) (*container.Id, error) {
+func (s *Service) StartContainer(ctx context.Context, image string, exposedContainerPort container.Port) (*container.Container, error) {
+	if s.runningContainer != nil {
+		return nil, fmt.Errorf("container already running")
+	}
 	spec := specgen.NewSpecGenerator(image, false)
 	spec.PortMappings = []nettypes.PortMapping{
 		{
@@ -68,7 +74,19 @@ func (s *Service) StartContainer(ctx context.Context, image string, exposedConta
 	if err != nil {
 		return nil, err
 	}
-	return &r.ID, nil
+
+	port, err := s.GetHostPort(ctx, r.ID, exposedContainerPort)
+	if err != nil {
+		return nil, err
+	}
+
+	s.runningContainer = &container.Container{
+		ID:       r.ID,
+		HostPort: port,
+		State:    container.Running,
+	}
+
+	return s.runningContainer, nil
 }
 
 func (s *Service) GetHostPort(ctx context.Context, containerId container.Id, containerPort container.Port) (container.Port, error) {
@@ -89,6 +107,10 @@ func (s *Service) GetHostPort(ctx context.Context, containerId container.Id, con
 }
 
 func (s *Service) StopContainer(ctx context.Context, containerId container.Id) error {
+	if s.runningContainer == nil {
+		return fmt.Errorf("container not running")
+	}
+	s.runningContainer.State = container.Stopping
 	err := containers.Stop(ctx, containerId, &containers.StopOptions{})
 	if err != nil {
 		return err
@@ -99,5 +121,6 @@ func (s *Service) StopContainer(ctx context.Context, containerId container.Id) e
 	if err != nil {
 		return err
 	}
+	s.runningContainer = nil
 	return nil
 }

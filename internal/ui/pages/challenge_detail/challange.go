@@ -1,39 +1,43 @@
 package challenge_detail
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/internal/container"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
+	"github.com/secfault-org/hacktober/internal/model/container"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
 	"github.com/secfault-org/hacktober/internal/ui/components/viewport"
 )
 
-const (
-	ContainerStateStarting = iota
-	ContainerStateRunning
-	ContainerStateStopped
-)
+type RunningChallenge struct {
+	Challenge challenge.Challenge
+	Container *container.Container
+}
+
+func (r *RunningChallenge) State() container.State {
+	return r.Container.State
+}
 
 type ChallengeDetailPage struct {
-	*viewport.Viewport
+	viewport          *viewport.Viewport
 	common            common.Common
 	selectedChallenge challenge.Challenge
-	ContainerState    int
+	runningChallenge  *RunningChallenge
 	statusbar         *statusbar.Model
 }
 
 func New(common common.Common) *ChallengeDetailPage {
 	page := &ChallengeDetailPage{
-		common:         common,
-		Viewport:       viewport.New(common),
-		ContainerState: ContainerStateStopped,
-		statusbar:      statusbar.New(common),
+		common:           common,
+		viewport:         viewport.New(common),
+		runningChallenge: nil,
+		statusbar:        statusbar.New(common),
 	}
 	page.SetSize(common.Height, common.Width)
 	return page
@@ -48,7 +52,7 @@ func (c *ChallengeDetailPage) getMargins() (int, int) {
 func (c *ChallengeDetailPage) SetSize(width, height int) {
 	c.common.SetSize(width, height)
 	_, hm := c.getMargins()
-	c.Viewport.SetSize(width, height-hm)
+	c.viewport.SetSize(width, height-hm)
 	c.statusbar.SetSize(width, height-hm)
 }
 
@@ -57,7 +61,7 @@ func (c *ChallengeDetailPage) commonHelp() []key.Binding {
 	back := c.common.KeyMap.Back
 	back.SetHelp("esc", "back to challenge list")
 	var containerHelp key.Binding
-	if c.ContainerState == ContainerStateRunning {
+	if c.runningChallenge != nil && c.runningChallenge.State() == container.Running {
 		containerHelp = c.common.KeyMap.StopContainer
 	} else {
 		containerHelp = c.common.KeyMap.SpawnContainer
@@ -81,7 +85,7 @@ func (c *ChallengeDetailPage) FullHelp() [][]key.Binding {
 
 func (c *ChallengeDetailPage) Init() tea.Cmd {
 	if c.selectedChallenge.ChallengeMarkdown == "" {
-		c.Viewport.Model.SetContent("Loading...")
+		c.viewport.Model.SetContent("Loading...")
 		return nil
 	} else {
 		width := c.common.Width
@@ -99,8 +103,10 @@ func (c *ChallengeDetailPage) Init() tea.Cmd {
 		if err != nil {
 			return nil
 		}
-		c.Viewport.Model.SetContent(rendered)
+		c.viewport.Model.SetContent(rendered)
 	}
+
+	c.statusbar.SetInfo(c.ContainerStatus())
 
 	return nil
 }
@@ -115,21 +121,34 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			c.statusbar.Init(),
 		)
 	case commands.ContainerSpawnedMsg:
-		c.ContainerState = msg.State
-		c.statusbar.SetInfo("Container running")
+		c.runningChallenge = &RunningChallenge{
+			Challenge: c.selectedChallenge,
+			Container: msg,
+		}
+		c.statusbar.SetInfo(c.ContainerStatus())
 		c.statusbar.SetSpinner(spinner.Globe)
 	case commands.ContainerErrorMsg:
 		c.common.Backend.Logger().Error(msg.Error())
 		c.statusbar.SetInfo(msg.Error())
+	case commands.ContainerStoppedMsg:
+		c.runningChallenge = nil
+		c.statusbar.SetInfo(c.ContainerStatus())
+		c.statusbar.HideSpinner()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, c.common.KeyMap.Back):
 			cmds = append(cmds, goBackCmd)
-		case key.Matches(msg, c.common.KeyMap.SpawnContainer) && c.ContainerState == ContainerStateStopped:
-			c.statusbar.SetInfo("Spawning container...")
+		case key.Matches(msg, c.common.KeyMap.SpawnContainer) && c.runningChallenge == nil || c.runningChallenge.State() == container.Stopped:
+			c.statusbar.SetInfo(c.ContainerStatus())
 			c.statusbar.SetSpinner(spinner.Dot)
 			cmds = append(cmds,
 				spawnContainerCmd(c.common, c.selectedChallenge),
+			)
+		case key.Matches(msg, c.common.KeyMap.StopContainer) && c.runningChallenge != nil && c.runningChallenge.State() == container.Running:
+			c.statusbar.SetInfo(c.ContainerStatus())
+			c.statusbar.SetSpinner(spinner.Dot)
+			cmds = append(cmds,
+				stopContainerCmd(c.common, c.runningChallenge.Container.ID),
 			)
 		}
 	case tea.WindowSizeMsg:
@@ -141,8 +160,8 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 
-	v, cmd := c.Viewport.Update(msg)
-	c.Viewport = v.(*viewport.Viewport)
+	v, cmd := c.viewport.Update(msg)
+	c.viewport = v.(*viewport.Viewport)
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
@@ -156,7 +175,7 @@ func (c *ChallengeDetailPage) View() string {
 		Height(c.common.Height - hm)
 	mainStyle := c.common.Styles.ChallengeDetail.Body.
 		Height(c.common.Height - hm)
-	main := c.Viewport.View()
+	main := c.viewport.View()
 	view := lipgloss.JoinVertical(lipgloss.Left,
 		mainStyle.Render(main),
 		c.statusbar.View(),
@@ -164,7 +183,30 @@ func (c *ChallengeDetailPage) View() string {
 	return s.Render(view)
 }
 
-func spawnContainer(cmn common.Common, challenge challenge.Challenge) (*container.Id, error) {
+func (c *ChallengeDetailPage) ContainerStatus() string {
+	if c.runningChallenge == nil {
+		return ""
+	}
+
+	title := c.runningChallenge.Challenge.Name
+	var message string
+
+	switch c.runningChallenge.State() {
+	case container.Starting:
+		message = "starting..."
+	case container.Stopped:
+		message = "stopping..."
+	case container.Running:
+		if c.runningChallenge.Container.HostPort != 0 {
+			message = fmt.Sprintf("running on port %d", c.runningChallenge.Container.HostPort)
+		} else {
+			message = "running"
+		}
+	}
+	return fmt.Sprintf("%s: %s", title, message)
+}
+
+func spawnContainer(cmn common.Common, challenge challenge.Challenge) (*container.Container, error) {
 	return cmn.ContainerService().StartContainer(cmn.Context(), challenge.ContainerImage, 1337)
 }
 
@@ -174,14 +216,24 @@ func goBackCmd() tea.Msg {
 
 func spawnContainerCmd(common common.Common, challenge challenge.Challenge) tea.Cmd {
 	return func() tea.Msg {
-		id, err := spawnContainer(common, challenge)
+		c, err := spawnContainer(common, challenge)
 		if err != nil {
 			return commands.ContainerErrorMsg(err)
 		}
-		return commands.ContainerSpawnedMsg{
-			ContainerId: *id,
-			Challenge:   challenge,
-			State:       ContainerStateRunning,
-		}
+		return commands.ContainerSpawnedMsg(c)
 	}
+}
+
+func stopContainer(cmn common.Common, containerId container.Id) error {
+	return cmn.ContainerService().StopContainer(cmn.Context(), containerId)
+}
+
+func stopContainerCmd(common common.Common, containerId container.Id) tea.Cmd {
+	return func() tea.Msg {
+		if err := stopContainer(common, containerId); err != nil {
+			return commands.ContainerErrorMsg(err)
+		}
+		return commands.ContainerStoppedMsg{}
+	}
+
 }

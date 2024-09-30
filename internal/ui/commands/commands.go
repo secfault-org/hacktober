@@ -11,9 +11,6 @@ type ContainerLoadingMsg struct {
 	Message string
 }
 type GoBackMsg struct{}
-type ContainerSpawnedMsg struct {
-	ContainerId container.Id
-	Challenge   challenge.Challenge
-	State       int
-}
+type ContainerSpawnedMsg *container.Container
+type ContainerStoppedMsg struct{}
 type ContainerErrorMsg error
