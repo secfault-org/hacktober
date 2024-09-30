@@ -100,7 +100,9 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.IdentifiableItem.(type) {
 		case challenges.Item:
 			challenge := msg.IdentifiableItem.(challenges.Item).Challenge
-			cmds = append(cmds, ui.selectChallengeCmd(challenge))
+			if !challenge.Locked() {
+				cmds = append(cmds, ui.selectChallengeCmd(challenge))
+			}
 		}
 	case commands.SelectChallengeMsg:
 		ui.activePage = challengeDetailsPage
