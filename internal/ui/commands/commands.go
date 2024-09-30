@@ -1,11 +1,11 @@
 package commands
 
 import (
-	"github.com/secfault-org/hacktober/internal/container"
-	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
+	"github.com/secfault-org/hacktober/internal/model/container"
 )
 
-type SelectChallengeMsg model.Challenge
+type SelectChallengeMsg challenge.Challenge
 type ContainerLoadingMsg struct {
 	Loading bool
 	Message string
@@ -13,7 +13,7 @@ type ContainerLoadingMsg struct {
 type GoBackMsg struct{}
 type ContainerSpawnedMsg struct {
 	ContainerId container.Id
-	Challenge   model.Challenge
+	Challenge   challenge.Challenge
 	State       int
 }
 type ContainerErrorMsg error

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"log"
 	"os"
 	"path"
@@ -25,12 +25,12 @@ type challengeInfo struct {
 
 var _ ChallengeRepository = (*challengeRepo)(nil)
 
-func (f *challengeRepo) GetAllChallenges(ctx context.Context) ([]model.Challenge, error) {
+func (f *challengeRepo) GetAllChallenges(ctx context.Context) ([]challenge.Challenge, error) {
 	entries, err := os.ReadDir(f.basedir)
 	if err != nil {
 		return nil, err
 	}
-	var challenges []model.Challenge
+	var challenges []challenge.Challenge
 	for _, entry := range entries {
 		if entry.IsDir() {
 			if entry.IsDir() {
@@ -45,11 +45,11 @@ func (f *challengeRepo) GetAllChallenges(ctx context.Context) ([]model.Challenge
 	return challenges, nil
 }
 
-func readChallenge(basedir string, challengeDir string) (model.Challenge, error) {
+func readChallenge(basedir string, challengeDir string) (challenge.Challenge, error) {
 
 	jsonFile, err := os.ReadFile(path.Join(basedir, challengeDir, "challenge.json"))
 	if err != nil {
-		return model.Challenge{}, err
+		return challenge.Challenge{}, err
 	}
 
 	var challengeJson challengeInfo
@@ -57,16 +57,16 @@ func readChallenge(basedir string, challengeDir string) (model.Challenge, error)
 
 	releaseDate, err := time.Parse(time.DateOnly, challengeJson.ReleaseDate)
 	if err != nil {
-		return model.Challenge{}, err
+		return challenge.Challenge{}, err
 	}
 
 	text, err := os.ReadFile(path.Join(basedir, challengeDir, challengeJson.DescFile))
 
 	if err != nil {
-		return model.Challenge{}, err
+		return challenge.Challenge{}, err
 	}
 
-	return model.Challenge{
+	return challenge.Challenge{
 		Name:              challengeJson.Title,
 		Description:       challengeJson.ShortDesc,
 		ChallengeMarkdown: string(text),

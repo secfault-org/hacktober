@@ -1,4 +1,4 @@
-package model
+package challenge
 
 import (
 	"time"

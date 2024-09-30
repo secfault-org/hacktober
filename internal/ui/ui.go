@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/footer"
@@ -133,7 +133,7 @@ func (ui *Ui) View() string {
 	return ui.common.Styles.App.Render(view)
 }
 
-func (ui *Ui) selectChallengeCmd(challenge model.Challenge) tea.Cmd {
+func (ui *Ui) selectChallengeCmd(challenge challenge.Challenge) tea.Cmd {
 	return func() tea.Msg {
 		return commands.SelectChallengeMsg(challenge)
 	}

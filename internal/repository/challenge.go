@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 )
 
 type ChallengeRepository interface {
-	GetAllChallenges(ctx context.Context) ([]model.Challenge, error)
+	GetAllChallenges(ctx context.Context) ([]challenge.Challenge, error)
 }

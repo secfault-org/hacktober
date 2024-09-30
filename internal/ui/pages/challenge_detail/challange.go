@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/internal/container"
-	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
@@ -23,7 +23,7 @@ const (
 type ChallengeDetailPage struct {
 	*viewport.Viewport
 	common            common.Common
-	selectedChallenge model.Challenge
+	selectedChallenge challenge.Challenge
 	ContainerState    int
 	statusbar         *statusbar.Model
 }
@@ -109,7 +109,7 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
 	switch msg := msg.(type) {
 	case commands.SelectChallengeMsg:
-		c.selectedChallenge = model.Challenge(msg)
+		c.selectedChallenge = challenge.Challenge(msg)
 		cmds = append(cmds,
 			c.Init(),
 			c.statusbar.Init(),
@@ -164,7 +164,7 @@ func (c *ChallengeDetailPage) View() string {
 	return s.Render(view)
 }
 
-func spawnContainer(cmn common.Common, challenge model.Challenge) (*container.Id, error) {
+func spawnContainer(cmn common.Common, challenge challenge.Challenge) (*container.Id, error) {
 	return cmn.ContainerService().StartContainer(cmn.Context(), challenge.ContainerImage, 1337)
 }
 
@@ -172,7 +172,7 @@ func goBackCmd() tea.Msg {
 	return commands.GoBackMsg{}
 }
 
-func spawnContainerCmd(common common.Common, challenge model.Challenge) tea.Cmd {
+func spawnContainerCmd(common common.Common, challenge challenge.Challenge) tea.Cmd {
 	return func() tea.Msg {
 		id, err := spawnContainer(common, challenge)
 		if err != nil {

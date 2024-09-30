@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/internal/model"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"io"
 	"strings"
@@ -13,7 +13,7 @@ import (
 )
 
 type Item struct {
-	Challenge model.Challenge
+	Challenge challenge.Challenge
 }
 
 func (i Item) ID() string          { return i.Challenge.Id }

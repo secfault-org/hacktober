@@ -8,7 +8,7 @@ import (
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 	"github.com/containers/podman/v5/pkg/bindings/images"
 	"github.com/containers/podman/v5/pkg/specgen"
-	"github.com/secfault-org/hacktober/internal/container"
+	"github.com/secfault-org/hacktober/internal/model/container"
 	"os"
 	"strconv"
 )

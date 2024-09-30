@@ -1,13 +1,13 @@
 package container
 
-import "context"
-
-type Id = string
-type Port = uint16
+import (
+	"context"
+	"github.com/secfault-org/hacktober/internal/model/container"
+)
 
 type Service interface {
 	PullImage(ctx context.Context, image string) error
-	StartContainer(ctx context.Context, image string, exposedContainerPort Port) (*Id, error)
-	GetHostPort(ctx context.Context, containerId Id, containerPort Port) (Port, error)
-	StopContainer(ctx context.Context, containerId Id) error
+	StartContainer(ctx context.Context, image string, exposedContainerPort container.Port) (*container.Id, error)
+	GetHostPort(ctx context.Context, containerId container.Id, containerPort container.Port) (container.Port, error)
+	StopContainer(ctx context.Context, containerId container.Id) error
 }
