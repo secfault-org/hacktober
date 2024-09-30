@@ -1,10 +1,12 @@
 package statusbar
 
 import (
+	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/internal/ui/common"
+	"time"
 )
 
 type Model struct {
@@ -12,6 +14,11 @@ type Model struct {
 	showSpinner bool
 	spinner     spinner.Model
 	info        string
+	common        common.Common
+	showSpinner   bool
+	spinner       spinner.Model
+	info          string
+	remainingTime time.Duration
 }
 
 func New(common common.Common) *Model {
@@ -56,15 +63,23 @@ func (bar *Model) View() string {
 		spinView = ""
 	}
 
+	timer := ""
+	if bar.remainingTime != 0 {
+		timer = sbStyle.Timer.Render(bar.remainingTime.String())
+	}
+
 	help := sbStyle.Help.Render("? Help")
 
-	info := sbStyle.Info.Width(bar.common.Width - lipgloss.Width(spinView) - lipgloss.Width(help)).Render(bar.info)
+	w := lipgloss.Width
+
+	info := sbStyle.Info.Width(bar.common.Width - w(spinView) - w(timer) - w(help)).Render(bar.info)
 
 	return bar.common.Renderer.NewStyle().MaxWidth(bar.common.Width).
 		Render(
 			lipgloss.JoinHorizontal(lipgloss.Top,
 				spinView,
 				info,
+				timer,
 				help,
 			),
 		)
@@ -72,6 +87,10 @@ func (bar *Model) View() string {
 
 func (bar *Model) SetInfo(info string) {
 	bar.info = info
+}
+
+func (bar *Model) SetRemainingTime(remainingTime time.Duration) {
+	bar.remainingTime = remainingTime
 }
 
 func (bar *Model) SetSpinner(spinner spinner.Spinner) {

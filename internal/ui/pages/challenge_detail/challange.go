@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/timer"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
@@ -13,6 +14,7 @@ import (
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
 	"github.com/secfault-org/hacktober/internal/ui/components/viewport"
+	"time"
 )
 
 type RunningChallenge struct {
@@ -26,6 +28,7 @@ func (r *RunningChallenge) State() container.State {
 
 type ChallengeDetailPage struct {
 	viewport          *viewport.Viewport
+	timer             timer.Model
 	common            common.Common
 	selectedChallenge challenge.Challenge
 	runningChallenge  *RunningChallenge
@@ -38,6 +41,7 @@ func New(common common.Common) *ChallengeDetailPage {
 		viewport:         viewport.New(common),
 		runningChallenge: nil,
 		statusbar:        statusbar.New(common),
+		timer:            timer.NewWithInterval(10*time.Minute, time.Second),
 	}
 	page.SetSize(common.Height, common.Width)
 	return page
@@ -127,6 +131,21 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		c.statusbar.SetInfo(c.ContainerStatus())
 		c.statusbar.SetSpinner(spinner.Globe)
+		c.timer.Timeout = 10 * time.Minute
+		cmds = append(cmds, c.timer.Init(), c.timer.Start())
+	case timer.TickMsg:
+		if msg.ID == c.timer.ID() && c.timer.Running() {
+			c.statusbar.SetRemainingTime(c.timer.Timeout)
+			var cmd tea.Cmd
+			c.timer, cmd = c.timer.Update(msg)
+			cmds = append(cmds, cmd)
+		}
+	case timer.TimeoutMsg:
+		c.statusbar.SetInfo(c.ContainerStatus())
+		c.statusbar.SetSpinner(spinner.Dot)
+		cmds = append(cmds,
+			stopContainerCmd(c.common, c.runningChallenge.Container.ID),
+		)
 	case commands.ContainerErrorMsg:
 		c.common.Backend.Logger().Error(msg.Error())
 		c.statusbar.SetInfo(msg.Error())
@@ -134,17 +153,23 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		c.runningChallenge = nil
 		c.statusbar.SetInfo(c.ContainerStatus())
 		c.statusbar.HideSpinner()
+		c.timer.Timeout = 0
+		c.statusbar.SetRemainingTime(c.timer.Timeout)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, c.common.KeyMap.Back):
 			cmds = append(cmds, goBackCmd)
 		case key.Matches(msg, c.common.KeyMap.SpawnContainer) && c.runningChallenge == nil || c.runningChallenge.State() == container.Stopped:
+			c.common.KeyMap.SpawnContainer.SetEnabled(false)
+			c.common.KeyMap.StopContainer.SetEnabled(true)
 			c.statusbar.SetInfo(c.ContainerStatus())
 			c.statusbar.SetSpinner(spinner.Dot)
 			cmds = append(cmds,
 				spawnContainerCmd(c.common, c.selectedChallenge),
 			)
 		case key.Matches(msg, c.common.KeyMap.StopContainer) && c.runningChallenge != nil && c.runningChallenge.State() == container.Running:
+			c.common.KeyMap.SpawnContainer.SetEnabled(true)
+			c.common.KeyMap.StopContainer.SetEnabled(false)
 			c.statusbar.SetInfo(c.ContainerStatus())
 			c.statusbar.SetSpinner(spinner.Dot)
 			cmds = append(cmds,

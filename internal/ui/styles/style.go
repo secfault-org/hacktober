@@ -34,6 +34,7 @@ type Styles struct {
 		Help    lipgloss.Style
 		Info    lipgloss.Style
 		Spinner lipgloss.Style
+		Timer   lipgloss.Style
 	}
 
 	Footer      lipgloss.Style
@@ -112,6 +113,11 @@ func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
 		Padding(0, 1).
 		Foreground(lipgloss.Color("243")).
 		Background(lipgloss.Color("237"))
+
+	style.Statusbar.Timer = renderer.NewStyle().
+		Padding(0, 1).
+		Foreground(lipgloss.Color("255")).
+		Background(lipgloss.Color("33"))
 
 	style.Footer = renderer.NewStyle().
 		MarginTop(1).
