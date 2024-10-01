@@ -1,7 +1,6 @@
 package statusbar
 
 import (
-	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -10,10 +9,6 @@ import (
 )
 
 type Model struct {
-	common      common.Common
-	showSpinner bool
-	spinner     spinner.Model
-	info        string
 	common        common.Common
 	showSpinner   bool
 	spinner       spinner.Model
