@@ -7,10 +7,12 @@ import (
 	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/components/confetti"
 	"github.com/secfault-org/hacktober/internal/ui/components/footer"
 	"github.com/secfault-org/hacktober/internal/ui/components/selector"
 	"github.com/secfault-org/hacktober/internal/ui/pages/challenge_detail"
 	"github.com/secfault-org/hacktober/internal/ui/pages/challenges"
+	"time"
 )
 
 type page int
@@ -21,19 +23,23 @@ const (
 )
 
 type Ui struct {
-	common     common.Common
-	pages      []common.Page
-	activePage page
-	footer     *footer.Footer
-	showFooter bool
+	common       common.Common
+	pages        []common.Page
+	activePage   page
+	footer       *footer.Footer
+	showFooter   bool
+	confetti     tea.Model
+	showConfetti bool
 }
 
 func NewUi(c common.Common) *Ui {
 	ui := &Ui{
-		common:     c,
-		pages:      make([]common.Page, 2),
-		activePage: challengesPage,
-		showFooter: true,
+		common:       c,
+		pages:        make([]common.Page, 2),
+		activePage:   challengesPage,
+		showFooter:   true,
+		showConfetti: false,
+		confetti:     confetti.InitialModel(),
 	}
 
 	ui.footer = footer.New(c, ui)
@@ -85,6 +91,12 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, cmd)
 			}
 		}
+	case ShowConfettiMsg:
+		ui.showConfetti = true
+		// ui.confetti.Init(), showConfettiCmd(), hideConfettiCmd(2*time.Second)
+	case HideConfettiMsg:
+		ui.showConfetti = false
+		cmds = append(cmds, tea.ClearScreen)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, ui.common.KeyMap.Quit):
@@ -111,6 +123,11 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case footer.ToggleHelpMsg:
 		ui.footer.SetShowAll(!ui.footer.ShowAll())
 	}
+	var cmd tea.Cmd
+	ui.confetti, cmd = ui.confetti.Update(msg)
+	if cmd != nil {
+		cmds = append(cmds, cmd)
+	}
 	f, cmd := ui.footer.Update(msg)
 	ui.footer = f.(*footer.Footer)
 	if cmd != nil {
@@ -127,7 +144,26 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return ui, tea.Batch(cmds...)
 }
 
+type ShowConfettiMsg struct{}
+type HideConfettiMsg struct{}
+
+func showConfettiCmd() tea.Cmd {
+	return func() tea.Msg {
+		return ShowConfettiMsg{}
+	}
+}
+
+func hideConfettiCmd(d time.Duration) tea.Cmd {
+	return func() tea.Msg {
+		time.Sleep(d)
+		return HideConfettiMsg{}
+	}
+}
+
 func (ui *Ui) View() string {
+	if ui.showConfetti {
+		return ui.confetti.View()
+	}
 	view := ui.pages[ui.activePage].View()
 	if ui.showFooter {
 		view = lipgloss.JoinVertical(lipgloss.Left, view, ui.footer.View())
