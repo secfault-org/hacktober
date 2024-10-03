@@ -13,7 +13,7 @@ import (
 )
 
 type Item struct {
-	Challenge challenge.Challenge
+	Challenge *challenge.Challenge
 }
 
 func (i Item) ID() string          { return i.Challenge.Id }

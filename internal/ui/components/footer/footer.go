@@ -6,15 +6,17 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
 )
 
-type ToggleFooterMsg struct{}
 type ToggleHelpMsg struct{}
 
 type Footer struct {
-	common common.Common
-	help   help.Model
-	keymap help.KeyMap
+	common    common.Common
+	help      help.Model
+	hideHelp  bool
+	statusbar *statusbar.Model
+	keymap    help.KeyMap
 }
 
 func New(c common.Common, keymap help.KeyMap) *Footer {
@@ -25,9 +27,11 @@ func New(c common.Common, keymap help.KeyMap) *Footer {
 	h.Styles.FullDesc = c.Styles.HelpValue
 
 	footer := &Footer{
-		common: c,
-		keymap: keymap,
-		help:   h,
+		common:    c,
+		keymap:    keymap,
+		help:      h,
+		hideHelp:  true,
+		statusbar: statusbar.New(c),
 	}
 	footer.SetSize(c.Width, c.Height)
 	return footer
@@ -35,6 +39,7 @@ func New(c common.Common, keymap help.KeyMap) *Footer {
 
 func (f *Footer) SetSize(width, height int) {
 	f.common.SetSize(width, height)
+	f.statusbar.SetSize(width, height)
 	f.help.Width = width - f.common.Styles.Footer.GetHorizontalFrameSize()
 }
 
@@ -42,8 +47,14 @@ func (f *Footer) Init() tea.Cmd {
 	return nil
 }
 
-func (f *Footer) Update(_ tea.Msg) (tea.Model, tea.Cmd) {
-	return f, nil
+func (f *Footer) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg.(type) {
+	case ToggleHelpMsg:
+		f.hideHelp = !f.hideHelp
+	}
+	s, cmd := f.statusbar.Update(msg)
+	f.statusbar = s.(*statusbar.Model)
+	return f, cmd
 }
 
 func (f *Footer) View() string {
@@ -53,8 +64,16 @@ func (f *Footer) View() string {
 
 	style := f.common.Styles.Footer.
 		Width(f.common.Width)
-	helpView := f.help.View(f.keymap)
-	return style.Render(helpView)
+	helpView := ""
+	if !f.hideHelp {
+		helpView = f.help.View(f.keymap)
+	}
+
+	view := lipgloss.JoinVertical(lipgloss.Left,
+		helpView,
+		f.statusbar.View(),
+	)
+	return style.Render(view)
 }
 
 func (f *Footer) ShortHelp() []key.Binding {
@@ -65,20 +84,8 @@ func (f *Footer) FullHelp() [][]key.Binding {
 	return f.keymap.FullHelp()
 }
 
-func (f *Footer) ShowAll() bool {
-	return f.help.ShowAll
-}
-
-func (f *Footer) SetShowAll(show bool) {
-	f.help.ShowAll = show
-}
-
 func (f *Footer) Height() int {
 	return lipgloss.Height(f.View())
-}
-
-func ToggleFooterCmd() tea.Msg {
-	return ToggleFooterMsg{}
 }
 
 func ToggleHelpCmd() tea.Msg {

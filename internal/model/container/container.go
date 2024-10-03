@@ -16,3 +16,18 @@ type Container struct {
 	State    State
 	HostPort Port
 }
+
+func (c State) ToEmoji() string {
+	switch c {
+	case Starting:
+		return "🚀"
+	case Running:
+		return "🏃"
+	case Stopping:
+		return "🛑"
+	case Stopped:
+		return "💤"
+	default:
+		return "❓"
+	}
+}

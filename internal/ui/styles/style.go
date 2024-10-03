@@ -121,7 +121,6 @@ func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
 
 	style.Footer = renderer.NewStyle().
 		MarginTop(1).
-		Padding(0, 1).
 		Height(1)
 
 	style.HelpKey = renderer.NewStyle().

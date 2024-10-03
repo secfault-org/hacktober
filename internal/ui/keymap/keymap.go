@@ -12,7 +12,6 @@ type KeyMap struct {
 	StopContainer  key.Binding
 	Back           key.Binding
 	Help           key.Binding
-	HideFooter     key.Binding
 }
 
 func DefaultKeyMap() *KeyMap {
@@ -106,16 +105,6 @@ func DefaultKeyMap() *KeyMap {
 		key.WithHelp(
 			"?",
 			"toggle help",
-		),
-	)
-
-	keymap.HideFooter = key.NewBinding(
-		key.WithKeys(
-			"h",
-		),
-		key.WithHelp(
-			"h",
-			"hide footer",
 		),
 	)
 

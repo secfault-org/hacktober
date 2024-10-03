@@ -2,9 +2,11 @@ package ui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/timer"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
+	"github.com/secfault-org/hacktober/internal/model/container"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/confetti"
@@ -27,7 +29,6 @@ type Ui struct {
 	pages        []common.Page
 	activePage   page
 	footer       *footer.Footer
-	showFooter   bool
 	confetti     tea.Model
 	showConfetti bool
 }
@@ -37,7 +38,6 @@ func NewUi(c common.Common) *Ui {
 		common:       c,
 		pages:        make([]common.Page, 2),
 		activePage:   challengesPage,
-		showFooter:   true,
 		showConfetti: false,
 		confetti:     confetti.InitialModel(),
 	}
@@ -50,9 +50,7 @@ func (ui *Ui) getMargins() (wm, hm int) {
 	style := ui.common.Styles.App
 	wm = style.GetHorizontalFrameSize()
 	hm = style.GetVerticalFrameSize()
-	if ui.showFooter {
-		hm += ui.footer.Height()
-	}
+	hm += ui.footer.Height()
 	return
 }
 
@@ -103,10 +101,10 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return ui, tea.Quit
 		case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.common.KeyMap.Back):
 			ui.activePage = challengesPage
-		case key.Matches(msg, ui.common.KeyMap.HideFooter):
-			cmds = append(cmds, footer.ToggleFooterCmd)
 		case key.Matches(msg, ui.common.KeyMap.Help):
 			cmds = append(cmds, footer.ToggleHelpCmd)
+		case key.Matches(msg, ui.common.KeyMap.StopContainer):
+			cmds = append(cmds, ui.common.StopActiveChallenge()...)
 		}
 	case selector.SelectMsg:
 		switch msg.IdentifiableItem.(type) {
@@ -118,11 +116,30 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case commands.SelectChallengeMsg:
 		ui.activePage = challengeDetailsPage
-	case footer.ToggleFooterMsg:
-		ui.showFooter = !ui.showFooter
-	case footer.ToggleHelpMsg:
-		ui.footer.SetShowAll(!ui.footer.ShowAll())
+	case commands.ChallengeStaringMsg:
+		activeChallenge := &challenge.ActiveChallenge{
+			Challenge: msg,
+			Container: &container.Container{
+				State: container.Starting,
+			},
+		}
+		cmds = append(cmds, commands.UpdateActiveChallenge(activeChallenge))
+	case commands.ChallengeStartedMsg:
+		ui.common.Backend.Logger().Debugf("Container for %s started", msg.Challenge.Name)
+		cmds = append(cmds, commands.UpdateActiveChallenge(msg))
+	case commands.ChallengeStoppingMsg:
+		cmds = append(cmds, commands.UpdateActiveChallenge(msg))
+	case commands.ChallengeStoppedMsg:
+		ui.common.Backend.Logger().Debugf("Container for %s stopped", msg.Name)
+		cmds = append(cmds, commands.UpdateActiveChallenge(nil))
+	case commands.ContainerErrorMsg:
+		ui.common.Backend.Logger().Error(msg.Error())
+	case commands.ActiveChallengeChangedMsg:
+		ui.common.SetActiveChallenge(msg)
+	case timer.TimeoutMsg:
+		cmds = append(cmds, ui.common.StopActiveChallenge()...)
 	}
+
 	var cmd tea.Cmd
 	ui.confetti, cmd = ui.confetti.Update(msg)
 	if cmd != nil {
@@ -164,14 +181,15 @@ func (ui *Ui) View() string {
 	if ui.showConfetti {
 		return ui.confetti.View()
 	}
-	view := ui.pages[ui.activePage].View()
-	if ui.showFooter {
-		view = lipgloss.JoinVertical(lipgloss.Left, view, ui.footer.View())
-	}
+	view := lipgloss.JoinVertical(lipgloss.Left,
+		ui.pages[ui.activePage].View(),
+		ui.footer.View(),
+	)
+
 	return ui.common.Styles.App.Render(view)
 }
 
-func (ui *Ui) selectChallengeCmd(challenge challenge.Challenge) tea.Cmd {
+func (ui *Ui) selectChallengeCmd(challenge *challenge.Challenge) tea.Cmd {
 	return func() tea.Msg {
 		return commands.SelectChallengeMsg(challenge)
 	}
@@ -179,8 +197,12 @@ func (ui *Ui) selectChallengeCmd(challenge challenge.Challenge) tea.Cmd {
 
 func (ui *Ui) ShortHelp() []key.Binding {
 	bindings := make([]key.Binding, 0)
+
 	bindings = append(bindings, ui.pages[ui.activePage].ShortHelp()...)
-	bindings = append(bindings, ui.common.KeyMap.Help, ui.common.KeyMap.HideFooter, ui.common.KeyMap.Quit)
+	if ui.common.IsChallengeRunning() {
+		bindings = append(bindings, ui.common.KeyMap.StopContainer)
+	}
+	bindings = append(bindings, ui.common.KeyMap.Help, ui.common.KeyMap.Quit)
 
 	return bindings
 }
@@ -189,10 +211,12 @@ func (ui *Ui) FullHelp() [][]key.Binding {
 	bindings := make([][]key.Binding, 0)
 
 	bindings = append(bindings, ui.pages[ui.activePage].FullHelp()...)
+	if ui.common.IsChallengeRunning() {
+		bindings = append(bindings, []key.Binding{ui.common.KeyMap.StopContainer})
+	}
 	bindings = append(bindings,
 		[]key.Binding{
 			ui.common.KeyMap.Help,
-			ui.common.KeyMap.HideFooter,
 			ui.common.KeyMap.Quit,
 		},
 	)

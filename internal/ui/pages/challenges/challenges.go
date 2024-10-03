@@ -41,7 +41,7 @@ func (c *ChallengePage) Init() tea.Cmd {
 
 	items := make([]selector.IdentifiableItem, len(challenges))
 	for i, it := range challenges {
-		items[i] = Item{Challenge: it}
+		items[i] = Item{Challenge: &it}
 	}
 
 	return tea.Batch(
@@ -51,15 +51,9 @@ func (c *ChallengePage) Init() tea.Cmd {
 }
 
 func (c *ChallengePage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	cmds := make([]tea.Cmd, 0)
-
 	m, cmd := c.selector.Update(msg)
 	c.selector = m.(*selector.Selector)
-	if cmd != nil {
-		cmds = append(cmds, cmd)
-	}
-
-	return c, tea.Batch(cmds...)
+	return c, cmd
 }
 
 func (c *ChallengePage) View() string {
