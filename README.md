@@ -25,15 +25,15 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
       - [x] Render Markdown
           - [x] short description
           - [x] source-code
-      - [ ] State and timer, statusbar?
+      - [x] State and timer, statusbar?
       - [ ] Add extra actions
           - [ ] Download source & executable
               - [ ] Using scp
                 - [ ] cannot be used directly. Use copy command and scp middleware
-          - [ ] Spawn a container
-    - [ ] Start Challenge
-        - [ ] Use a cmd to trigger it
-        - [ ] using podman bindings
+          - [x] Spawn a container
+    - [x] Start Challenge
+        - [x] Use a cmd to trigger it
+        - [x] using podman bindings
     - [ ] Stop Challenge after time and on session end
     - [ ] Explanation pages
         - [ ] Stack
