@@ -109,9 +109,9 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case selector.SelectMsg:
 		switch msg.IdentifiableItem.(type) {
 		case challenges.Item:
-			challenge := msg.IdentifiableItem.(challenges.Item).Challenge
-			if !challenge.Locked() {
-				cmds = append(cmds, ui.selectChallengeCmd(challenge))
+			chall := msg.IdentifiableItem.(challenges.Item).Challenge
+			if !chall.Locked() {
+				cmds = append(cmds, ui.selectChallengeCmd(chall))
 			}
 		}
 	case commands.SelectChallengeMsg:
