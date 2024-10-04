@@ -4,6 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/harmonica"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/secfault-org/hacktober/internal/ui/common"
 	"math/rand"
 	"time"
 )
@@ -31,6 +32,7 @@ func animate() tea.Cmd {
 }
 
 type Model struct {
+	common common.Common
 	system *System
 }
 
@@ -38,14 +40,14 @@ func Spawn(width, height int) []*Particle {
 	particles := []*Particle{}
 	for i := 0; i < numParticles; i++ {
 		x := float64(width / 2)
-		y := float64(0)
+		y := float64(height)
 
 		p := Particle{
 			Physics: harmonica.NewProjectile(
 				harmonica.FPS(framesPerSecond),
 				harmonica.Point{X: x + (float64(width/4) * (rand.Float64() - 0.5)), Y: y, Z: 0},
-				harmonica.Vector{X: (rand.Float64() - 0.5) * 100, Y: rand.Float64() * 30, Z: 0},
-				harmonica.TerminalGravity,
+				harmonica.Vector{X: (rand.Float64() - 0.5) * 200, Y: rand.Float64() * -200, Z: 0},
+				harmonica.Vector{Y: 30},
 			),
 			Char: lipgloss.NewStyle().
 				Foreground(lipgloss.Color(Sample(colors))).
@@ -57,15 +59,19 @@ func Spawn(width, height int) []*Particle {
 	return particles
 }
 
-func InitialModel() Model {
-	return Model{system: &System{
-		Particles: []*Particle{},
-		Frame:     Frame{},
-	}}
+func InitialModel(cmn common.Common) Model {
+	return Model{
+		common: cmn,
+		system: &System{
+			Particles: []*Particle{},
+			Frame:     Frame{},
+		},
+	}
 }
 
 // Init initializes the confetti after a small delay
 func (m Model) Init() tea.Cmd {
+	m.system.Particles = Spawn(m.common.Width, m.common.Height)
 	return animate()
 }
 
@@ -73,22 +79,10 @@ func (m Model) Init() tea.Cmd {
 // updates the particle physics every frame
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		}
-		m.system.Particles = append(m.system.Particles, Spawn(m.system.Frame.Width, m.system.Frame.Height)...)
-
-		return m, nil
 	case frameMsg:
 		m.system.Update()
 		return m, animate()
 	case tea.WindowSizeMsg:
-		if m.system.Frame.Width == 0 && m.system.Frame.Height == 0 {
-			// For the first frameMsg spawn a system of particles
-			m.system.Particles = Spawn(msg.Width, msg.Height)
-		}
 		m.system.Frame.Width = msg.Width
 		m.system.Frame.Height = msg.Height
 		return m, nil
@@ -100,4 +94,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View displays all the particles on the screen
 func (m Model) View() string {
 	return m.system.Render()
+}
+
+func (m Model) Reset() {
+	m.system.Particles = Spawn(m.common.Width, m.common.Height)
 }

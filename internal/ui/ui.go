@@ -29,7 +29,7 @@ type Ui struct {
 	pages        []common.Page
 	activePage   page
 	footer       *footer.Footer
-	confetti     tea.Model
+	confetti     confetti.Model
 	showConfetti bool
 	inputFocused bool
 	quitting     bool
@@ -41,7 +41,7 @@ func NewUi(c common.Common) *Ui {
 		pages:        make([]common.Page, 2),
 		activePage:   challengesPage,
 		showConfetti: false,
-		confetti:     confetti.InitialModel(),
+		confetti:     confetti.InitialModel(c),
 		inputFocused: false,
 	}
 
@@ -76,6 +76,7 @@ func (ui *Ui) Init() tea.Cmd {
 	cmds = append(cmds,
 		ui.pages[challengesPage].Init(),
 		ui.pages[challengeDetailsPage].Init(),
+		ui.confetti.Init(),
 	)
 	return tea.Batch(cmds...)
 }
@@ -93,13 +94,13 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case ShowConfettiMsg:
+		ui.confetti.Reset()
 		ui.showConfetti = true
 	case HideConfettiMsg:
 		ui.showConfetti = false
 		cmds = append(cmds, tea.ClearScreen)
 	case commands.ChallengeSolvedMsg:
 		cmds = append(cmds,
-			ui.confetti.Init(),
 			showConfettiCmd(),
 			hideConfettiCmd(2*time.Second),
 		)
@@ -170,7 +171,8 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	ui.confetti, cmd = ui.confetti.Update(msg)
+	con, cmd := ui.confetti.Update(msg)
+	ui.confetti = con.(confetti.Model)
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
