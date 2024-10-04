@@ -10,6 +10,7 @@ import (
 	"github.com/containers/podman/v5/pkg/specgen"
 	"github.com/secfault-org/hacktober/internal/model/container"
 	"os"
+	"runtime"
 	"strconv"
 )
 
@@ -18,9 +19,19 @@ type Service struct {
 }
 
 func NewContainerService(ctx context.Context) *Service {
-	return &Service{
+	service := &Service{
 		runningContainer: nil,
 	}
+
+	// TODO: Find a better way to handle this
+	runtime.SetFinalizer(service, func(s *Service) {
+		if s.runningContainer != nil {
+			ctx, _ := s.Connect(context.Background())
+			_ = s.StopContainer(ctx, s.runningContainer.ID)
+		}
+	})
+
+	return service
 }
 
 func (s *Service) Connect(ctx context.Context) (context.Context, error) {
