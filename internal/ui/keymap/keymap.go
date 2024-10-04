@@ -8,6 +8,8 @@ type KeyMap struct {
 	GotoTop        key.Binding
 	GotoBottom     key.Binding
 	Select         key.Binding
+	Submit         key.Binding
+	EnterFlag      key.Binding
 	SpawnContainer key.Binding
 	StopContainer  key.Binding
 	Back           key.Binding
@@ -66,6 +68,16 @@ func DefaultKeyMap() *KeyMap {
 	keymap.Select = key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "select"),
+	)
+
+	keymap.Submit = key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "submit flag"),
+	)
+
+	keymap.EnterFlag = key.NewBinding(
+		key.WithKeys("ctrl+f"),
+		key.WithHelp("ctrl+f", "Enter Flag"),
 	)
 
 	keymap.SpawnContainer = key.NewBinding(

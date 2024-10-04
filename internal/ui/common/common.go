@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"encoding/hex"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/secfault-org/hacktober/internal/backend"
@@ -12,6 +13,8 @@ import (
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/keymap"
 	"github.com/secfault-org/hacktober/internal/ui/styles"
+	"math/rand"
+	"time"
 )
 
 type Common struct {
@@ -105,7 +108,14 @@ func (c *Common) StartChallenge(chall *challenge.Challenge) []tea.Cmd {
 	}
 
 	spawnCmd := func() tea.Msg {
-		runningContainer, err := c.ContainerService().StartContainer(c.ctx, chall.ContainerImage, 1337)
+		src := rand.New(rand.NewSource(time.Now().UnixNano()))
+		b := make([]byte, 32)
+		if _, err := src.Read(b); err != nil {
+			c.KeyMap.SpawnContainer.SetEnabled(true)
+			return commands.ContainerErrorMsg(err)
+		}
+		flag := hex.EncodeToString(b)[:32]
+		runningContainer, err := c.ContainerService().StartContainer(c.ctx, chall.ContainerImage, flag, 1337)
 		if err != nil {
 			c.KeyMap.SpawnContainer.SetEnabled(true)
 			return commands.ContainerErrorMsg(err)
@@ -114,6 +124,7 @@ func (c *Common) StartChallenge(chall *challenge.Challenge) []tea.Cmd {
 		c.activeChallenge = &challenge.ActiveChallenge{
 			Challenge: chall,
 			Container: runningContainer,
+			Flag:      flag,
 		}
 		return commands.ChallengeStartedMsg(c.activeChallenge)
 	}

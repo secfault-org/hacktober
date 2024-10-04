@@ -5,21 +5,32 @@
 
 char *gets(char *);
 
+void printFlag() {
+  char* flag = getenv("FLAG");
+  if (flag == NULL) {
+    puts("Uh oh, the flag is missing. Please contact an admin if you are running ");
+    exit(1);
+  }
+  printf("Flag: %s\n", flag);
+}
+
 int main(int argc, char **argv) {
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
   struct {
     char buffer[64];
-    volatile int changeme;
+    volatile int change_me;
   } locals;
 
-  locals.changeme = 0;
+  printf("%s\n", "Welcome to Challenge 1! Can you change 'change_me'?");
+
+  locals.change_me = 0;
   gets(locals.buffer);
 
-  if (locals.changeme != 0) {
-    puts("Well done, the 'changeme' variable has been changed!");
+  if (locals.change_me != 0) {
+    printFlag();
   } else {
-    puts(
-        "Uh oh, 'changeme' has not yet been changed. Would you like to try "
-        "again?");
+    puts("Uh oh, 'changeme' has not yet been changed.");
   }
 
   exit(0);

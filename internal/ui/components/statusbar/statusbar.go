@@ -1,7 +1,9 @@
 package statusbar
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/timer"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -16,15 +18,20 @@ type Model struct {
 	spinner spinner.Model
 	info    string
 	timer   timer.Model
+	input   textinput.Model
 }
 
 func New(common common.Common) *Model {
 	s := spinner.New(spinner.WithSpinner(spinner.Jump))
 	s.Style = common.Styles.Statusbar.Spinner
+	input := textinput.New()
+	input.Placeholder = "Enter flag"
+	input.CharLimit = 50
 	return &Model{
 		common:  common,
 		spinner: s,
 		timer:   timer.New(0),
+		input:   input,
 	}
 }
 
@@ -46,6 +53,20 @@ func (bar *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		bar.SetSize(msg.Width, msg.Height)
+	case tea.KeyMsg:
+		if bar.input.Focused() {
+			switch {
+			case key.Matches(msg, bar.common.KeyMap.Submit):
+				submittedFlag := bar.input.Value()
+				bar.input.Blur()
+				cmds = append(cmds, commands.FlagEntered(submittedFlag))
+			}
+		}
+	case commands.EnterFlagMsg:
+		cmds = append(cmds, bar.input.Focus())
+	case commands.EnteringFlagCanceledMsg:
+		bar.input.Blur()
+		bar.input.Reset()
 	case commands.ActiveChallengeChangedMsg:
 		bar.info = util.ActiveChallengeStatusMessage(msg)
 	case commands.ChallengeStartedMsg:
@@ -65,6 +86,10 @@ func (bar *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 	bar.timer, cmd = bar.timer.Update(msg)
+	if cmd != nil {
+		cmds = append(cmds, cmd)
+	}
+	bar.input, cmd = bar.input.Update(msg)
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
@@ -88,12 +113,17 @@ func (bar *Model) View() string {
 
 	w := lipgloss.Width
 
-	info := sbStyle.Info.Width(bar.common.Width - w(countdown) - w(help)).Render(bar.info)
+	main := bar.info
+	if bar.input.Focused() {
+		main = bar.input.View()
+	}
+
+	main = sbStyle.Info.Width(bar.common.Width - w(countdown) - w(help)).Render(main)
 
 	return bar.common.Renderer.NewStyle().MaxWidth(bar.common.Width).
 		Render(
 			lipgloss.JoinHorizontal(lipgloss.Top,
-				info,
+				main,
 				countdown,
 				help,
 			),

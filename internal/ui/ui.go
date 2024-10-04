@@ -31,6 +31,8 @@ type Ui struct {
 	footer       *footer.Footer
 	confetti     tea.Model
 	showConfetti bool
+	inputFocused bool
+	quitting     bool
 }
 
 func NewUi(c common.Common) *Ui {
@@ -40,6 +42,7 @@ func NewUi(c common.Common) *Ui {
 		activePage:   challengesPage,
 		showConfetti: false,
 		confetti:     confetti.InitialModel(),
+		inputFocused: false,
 	}
 
 	ui.footer = footer.New(c, ui)
@@ -91,20 +94,41 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case ShowConfettiMsg:
 		ui.showConfetti = true
-		// ui.confetti.Init(), showConfettiCmd(), hideConfettiCmd(2*time.Second)
 	case HideConfettiMsg:
 		ui.showConfetti = false
 		cmds = append(cmds, tea.ClearScreen)
+	case commands.ChallengeSolvedMsg:
+		cmds = append(cmds,
+			ui.confetti.Init(),
+			showConfettiCmd(),
+			hideConfettiCmd(2*time.Second),
+		)
+		cmds = append(cmds, ui.common.StopActiveChallenge()...)
+	case commands.FlagEnteredMsg:
+		ui.inputFocused = false
+		cmds = append(cmds, commands.SubmitFlag(msg.Flag, ui.common.ActiveChallenge()))
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, ui.common.KeyMap.Quit):
-			return ui, tea.Quit
-		case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.common.KeyMap.Back):
-			ui.activePage = challengesPage
-		case key.Matches(msg, ui.common.KeyMap.Help):
-			cmds = append(cmds, footer.ToggleHelpCmd)
-		case key.Matches(msg, ui.common.KeyMap.StopContainer):
-			cmds = append(cmds, ui.common.StopActiveChallenge()...)
+		if !ui.inputFocused {
+			switch {
+			case key.Matches(msg, ui.common.KeyMap.EnterFlag) && ui.common.IsChallengeRunning():
+				ui.inputFocused = true
+				cmds = append(cmds, commands.EnteringFlagCmd)
+			case key.Matches(msg, ui.common.KeyMap.Quit):
+				ui.quitting = true
+				return ui, commands.QuittingCmd(ui.common.ActiveChallenge())
+			case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.common.KeyMap.Back):
+				ui.activePage = challengesPage
+			case key.Matches(msg, ui.common.KeyMap.Help):
+				cmds = append(cmds, footer.ToggleHelpCmd)
+			case key.Matches(msg, ui.common.KeyMap.StopContainer):
+				cmds = append(cmds, ui.common.StopActiveChallenge()...)
+			}
+		} else {
+			switch {
+			case key.Matches(msg, ui.common.KeyMap.Back):
+				ui.inputFocused = false
+				cmds = append(cmds, commands.EnteringFlagCanceled)
+			}
 		}
 	case selector.SelectMsg:
 		switch msg.IdentifiableItem.(type) {
@@ -132,6 +156,11 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case commands.ChallengeStoppedMsg:
 		ui.common.Backend.Logger().Debugf("Container for %s stopped", msg.Name)
 		cmds = append(cmds, commands.UpdateActiveChallenge(nil))
+		if ui.quitting {
+			cmds = append(cmds, tea.Quit)
+		}
+	case commands.TeardownMsg:
+		cmds = append(cmds, ui.common.StopActiveChallenge()...)
 	case commands.ContainerErrorMsg:
 		ui.common.Backend.Logger().Error(msg.Error())
 	case commands.ActiveChallengeChangedMsg:
@@ -151,10 +180,12 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 
-	m, cmd := ui.pages[ui.activePage].Update(msg)
-	ui.pages[ui.activePage] = m.(common.Page)
-	if cmd != nil {
-		cmds = append(cmds, cmd)
+	if !ui.inputFocused {
+		m, cmd := ui.pages[ui.activePage].Update(msg)
+		ui.pages[ui.activePage] = m.(common.Page)
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
 	}
 
 	ui.SetSize(ui.common.Width, ui.common.Height)
@@ -181,8 +212,18 @@ func (ui *Ui) View() string {
 	if ui.showConfetti {
 		return ui.confetti.View()
 	}
+
+	mainView := ui.pages[ui.activePage].View()
+	if ui.quitting {
+		w := lipgloss.Width(mainView)
+		h := lipgloss.Height(mainView)
+		message := "Quitting...\nWait until the container is stopped"
+		mainView = lipgloss.PlaceVertical(h, lipgloss.Center, message)
+		mainView = lipgloss.PlaceHorizontal(w, lipgloss.Center, mainView)
+	}
+
 	view := lipgloss.JoinVertical(lipgloss.Left,
-		ui.pages[ui.activePage].View(),
+		mainView,
 		ui.footer.View(),
 	)
 

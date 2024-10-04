@@ -7,7 +7,7 @@ import (
 
 type Service interface {
 	PullImage(ctx context.Context, image string) error
-	StartContainer(ctx context.Context, image string, exposedContainerPort container.Port) (*container.Container, error)
+	StartContainer(ctx context.Context, image string, flag string, exposedContainerPort container.Port) (*container.Container, error)
 	GetHostPort(ctx context.Context, containerId container.Id, containerPort container.Port) (container.Port, error)
 	StopContainer(ctx context.Context, containerId container.Id) error
 }

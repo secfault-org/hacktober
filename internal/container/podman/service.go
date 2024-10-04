@@ -46,7 +46,7 @@ func (s *Service) PullImage(ctx context.Context, image string) error {
 	return nil
 }
 
-func (s *Service) StartContainer(ctx context.Context, image string, exposedContainerPort container.Port) (*container.Container, error) {
+func (s *Service) StartContainer(ctx context.Context, image, flag string, exposedContainerPort container.Port) (*container.Container, error) {
 	if s.runningContainer != nil {
 		return nil, fmt.Errorf("container already running")
 	}
@@ -57,6 +57,9 @@ func (s *Service) StartContainer(ctx context.Context, image string, exposedConta
 			ContainerPort: exposedContainerPort,
 			Protocol:      "tcp",
 		},
+	}
+	spec.Env = map[string]string{
+		"FLAG": flag,
 	}
 	r, err := containers.CreateWithSpec(ctx, spec, &containers.CreateOptions{})
 	if err != nil {

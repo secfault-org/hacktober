@@ -7,6 +7,7 @@ import (
 type ActiveChallenge struct {
 	Challenge *Challenge
 	Container *container.Container
+	Flag      string
 }
 
 func (r *ActiveChallenge) State() container.State {
