@@ -5,7 +5,9 @@
 
 char *gets(char *);
 
-void printFlag() {
+#define BANNER "Welcome to Challenge 1! Can you change 'change_me'?"
+
+void win() {
   char* flag = getenv("FLAG");
   if (flag == NULL) {
     puts("Uh oh, the flag is missing. Please contact an admin if you are running ");
@@ -14,7 +16,7 @@ void printFlag() {
   printf("Flag: %s\n", flag);
 }
 
-int main(int argc, char **argv) {
+int main() {
   setvbuf(stdout, NULL, _IONBF, 0);
   setvbuf(stderr, NULL, _IONBF, 0);
   struct {
@@ -22,13 +24,13 @@ int main(int argc, char **argv) {
     volatile int change_me;
   } locals;
 
-  printf("%s\n", "Welcome to Challenge 1! Can you change 'change_me'?");
+  printf("%s\n", BANNER);
 
   locals.change_me = 0;
   gets(locals.buffer);
 
   if (locals.change_me != 0) {
-    printFlag();
+    win();
   } else {
     puts("Uh oh, 'changeme' has not yet been changed.");
   }
