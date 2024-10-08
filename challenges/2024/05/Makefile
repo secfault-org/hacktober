@@ -15,7 +15,7 @@ run: $(TARGET_NAME)
 	FLAG=this_is_only_a_test_flag ./$(TARGET_NAME)
 
 dockerfile: $(TARGET_NAME)
-	docker build -t $(DOCKER_NAME) .
+	podman build -t $(DOCKER_NAME) .
 
 clean:
 	rm -f $(TARGET_NAME)
