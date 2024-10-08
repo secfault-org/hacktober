@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define BANNER "Welcome to Challenge 1! Can you change 'change_me'?"
+#define BANNER "Welcome to Challenge 3! It's time to test your skills. Can you call win to get the Flag?"
 
 char* gets(char* buffer);
 
@@ -25,18 +25,19 @@ int main() {
 
   struct {
     char buffer[64];
-    volatile int change_me;
+    int (*fp)();
   } locals;
 
   printf("%s\n", BANNER);
 
-  locals.change_me = 0;
+  locals.fp = NULL;
   gets(locals.buffer);
 
-  if (locals.change_me != 0) {
-    win();
+  if (locals.fp) {
+    printf("calling function pointer @ %p\n", (void *)(size_t) locals.fp);
+    locals.fp();
   } else {
-    puts("Uh oh, 'changeme' has not yet been changed.");
+    printf("function pointer remains unmodified :~( better luck next time!\n");
   }
 
   exit(0);

@@ -1,0 +1,8 @@
+{
+  "title": "05 - No signals returning",
+  "shortDescription": "Your first real ret2win challenge",
+  "descriptionFile": "description.md",
+  "difficulty": 2,
+  "releaseDate": "2024-10-05",
+  "containerImage": "hacktober2024_challenge_05"
+}

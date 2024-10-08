@@ -1,0 +1,8 @@
+{
+  "title": "04 - SOS signal",
+  "shortDescription": "Rescue is winning",
+  "descriptionFile": "description.md",
+  "difficulty": 1,
+  "releaseDate": "2024-10-04",
+  "containerImage": "hacktober2024_challenge_04"
+}

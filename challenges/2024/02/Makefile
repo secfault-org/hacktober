@@ -1,5 +1,5 @@
 TARGET_NAME=chall
-DOCKER_NAME=hacktober2024_challenge_01
+DOCKER_NAME=hacktober2024_challenge_02
 SRCS=chall.c
 
 CC=gcc

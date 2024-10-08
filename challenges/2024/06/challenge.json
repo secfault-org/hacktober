@@ -1,0 +1,8 @@
+{
+  "title": "06 - Calling Conventions",
+  "shortDescription": "Do you have the right arguments?",
+  "descriptionFile": "description.md",
+  "difficulty": 3,
+  "releaseDate": "2024-10-06",
+  "containerImage": "hacktober2024_challenge_06"
+}

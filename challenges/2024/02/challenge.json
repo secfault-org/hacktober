@@ -1,7 +1,8 @@
 {
-  "title": "02 - Stack basics 2",
-  "shortDescription": "Learn how to use the stack data structure",
+  "title": "02 - Stack basics",
+  "shortDescription": "Still basics, but can you control the overflow?",
   "descriptionFile": "description.md",
   "difficulty": 1,
-  "releaseDate": "2024-10-02"
+  "releaseDate": "2024-10-02",
+  "containerImage": "hacktober2024_challenge_02"
 }

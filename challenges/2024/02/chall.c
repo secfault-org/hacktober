@@ -1,13 +1,3 @@
-Challenge 2
-===========
-
-In dieser Challenge soll ein bestimmter Wert in einer Variable geändert werden. Der Wert ist in der Variable `change_me` gespeichert und soll auf `0x496c5962` geändert werden.
-
-Es ist im Grunde die gleiche Aufgabe wie in Challenge 1, nur dass hier die Variable `change_me` kontrolliert überschrieben werden soll.
-
-Spätestens hier solltes du mit PwnTools oder ähnliches arbeiten, um die Aufgabe zu lösen.
-
-```c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -52,4 +42,3 @@ int main() {
 
   exit(0);
 }
-```

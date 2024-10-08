@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <signal.h>
 
-#define BANNER "Welcome to Challenge 1! Can you change 'change_me'?"
+#define BANNER "Welcome to Challenge 4! Sinals will help you this time. Can you get the flag?"
 
 char* gets(char* buffer);
 
@@ -12,32 +14,26 @@ void win() {
     exit(1);
   }
   printf("Flag: %s\n", flag);
+  exit(0);
 }
 
 void setup() {
   setvbuf(stdout, NULL, _IONBF, 0);
   setvbuf(stdin, NULL, _IONBF, 0);
   setvbuf(stderr, NULL, _IONBF, 0);
+  signal(SIGSEGV, win);
+}
+
+void vulnerable() {
+  char buf[32];
+  gets(buf);
 }
 
 int main() {
   setup();
-
-  struct {
-    char buffer[64];
-    volatile int change_me;
-  } locals;
-
   printf("%s\n", BANNER);
 
-  locals.change_me = 0;
-  gets(locals.buffer);
-
-  if (locals.change_me != 0) {
-    win();
-  } else {
-    puts("Uh oh, 'changeme' has not yet been changed.");
-  }
-
+  vulnerable();
   exit(0);
 }
+
