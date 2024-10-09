@@ -55,7 +55,7 @@ int main() {
 }
 ```
 
-Um die Challenge zu starten einfach innnerhalb der Challenge (also hier) ctrl+s drücken.
+Um die Challenge zu starten einfach innerhalb der Challenge (also hier) `ctrl+r` drücken.
 Daraufhin wird die Challenge gestartet und ist über das Netzwerk erreichbar. Der Port wird
 unten in der Statusleiste angezeigt.
 
