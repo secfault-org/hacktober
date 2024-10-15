@@ -11,8 +11,8 @@ require (
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240725163421-eb71b85b27aa
 	github.com/charmbracelet/wish v1.4.3
-	github.com/containers/common v0.60.3
-	github.com/containers/podman/v5 v5.2.3
+	github.com/containers/common v0.60.4
+	github.com/containers/podman/v5 v5.2.4
 )
 
 require (
@@ -44,7 +44,7 @@ require (
 	github.com/containerd/errdefs v0.1.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.15.1 // indirect
-	github.com/containers/buildah v1.37.3 // indirect
+	github.com/containers/buildah v1.37.4 // indirect
 	github.com/containers/image/v5 v5.32.2 // indirect
 	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
 	github.com/containers/ocicrypt v1.2.0 // indirect

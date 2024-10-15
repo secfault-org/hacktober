@@ -72,6 +72,7 @@ func (s *Service) StartContainer(ctx context.Context, image, flag string, expose
 	spec.Env = map[string]string{
 		"FLAG": flag,
 	}
+	spec.SeccompProfilePath = "unconfined"
 	r, err := containers.CreateWithSpec(ctx, spec, &containers.CreateOptions{})
 	if err != nil {
 		return nil, err

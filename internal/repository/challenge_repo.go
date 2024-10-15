@@ -21,6 +21,7 @@ type challengeInfo struct {
 	Difficulty     uint8  `json:"difficulty"`
 	ReleaseDate    string `json:"releaseDate"`
 	ContainerImage string `json:"containerImage"`
+	DisableASLR    bool   `json:"disableASLR"`
 }
 
 var _ ChallengeRepository = (*challengeRepo)(nil)

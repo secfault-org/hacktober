@@ -41,6 +41,11 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
         - [ ] Heap
     - [x] Connect via SSH
       - [ ] User by public key hash
+    - [x] ASLR
+      - [x] mount bin ro
+      - [x] create entrypoint
+        - [x] set ASLR
+        - [x] write flag to file
     - [ ] Earn stars
         - [ ] Keep starts after relogin
         - [ ] Identify user by publickey

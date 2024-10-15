@@ -1,10 +1,5 @@
-FROM debian:bookworm-slim
-
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y socat && rm -rf /var/lib/apt/lists/*
+FROM localhost/hacktober_base
 
 COPY chall /chall
 
-CMD socat \
-      TCP-LISTEN:1337,reuseaddr,fork \
-      EXEC:"/chall"
+CMD ["-p", "1337", "-b", "/chall", "-a", "x86_64"]

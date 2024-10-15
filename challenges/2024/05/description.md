@@ -2,7 +2,7 @@ Challenge 5
 ===========
 
 Das ist die erste Challenge, in dem wir wirklich ret2win ausnutzen können.
-Der Code ist sehr ähnlich zu Challenge 4, aber dieses Mal wirden die Singals nicht gehandelt.
+Der Code ist sehr ähnlich zu Challenge 4, aber dieses Mal werden die Singals nicht gehandelt.
 Schaffst du es trotzdem `win` aufzurufen um die Flag zu bekommen?
 
 ```c

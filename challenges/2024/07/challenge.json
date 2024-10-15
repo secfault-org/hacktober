@@ -1,0 +1,8 @@
+{
+  "title": "07 - Shellcode",
+  "shortDescription": "Lets get the hands dirty with some shellcode",
+  "descriptionFile": "description.md",
+  "difficulty": 4,
+  "releaseDate": "2024-10-07",
+  "containerImage": "hacktober2024_challenge_07"
+}
