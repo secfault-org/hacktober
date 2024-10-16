@@ -34,10 +34,10 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
     - [x] Start Challenge
         - [x] Use a cmd to trigger it
         - [x] using podman bindings
-    - [ ] Stop Challenge after time and on session end
+    - [x] Stop Challenge after time and on session end
     - [ ] Explanation pages
         - [ ] Stack
-        - [ ] Format-String explaination
+        - [ ] Format-String explanation
         - [ ] Heap
     - [x] Connect via SSH
       - [ ] User by public key hash

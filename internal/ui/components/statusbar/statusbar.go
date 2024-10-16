@@ -35,8 +35,9 @@ func New(common common.Common) *Model {
 	}
 }
 
-func defaultTimer() timer.Model {
-	return timer.NewWithInterval(10*time.Minute, time.Second)
+func (bar *Model) defaultTimer() timer.Model {
+	cfg := bar.common.Backend.Config
+	return timer.NewWithInterval(time.Duration(cfg.Container.TimeoutInMinutes)*time.Minute, time.Second)
 }
 
 func (bar *Model) SetSize(width, height int) {
@@ -71,7 +72,7 @@ func (bar *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		bar.info = util.ActiveChallengeStatusMessage(msg)
 	case commands.ChallengeStartedMsg:
 		bar.spinner = spinner.New(spinner.WithSpinner(Clock))
-		bar.timer = defaultTimer()
+		bar.timer = bar.defaultTimer()
 		cmds = append(cmds, bar.spinner.Tick, bar.timer.Start())
 	case commands.ChallengeStoppingMsg:
 		cmds = append(cmds, bar.timer.Stop())
