@@ -1,4 +1,5 @@
 {
+  "id": "PWN101-05",
   "title": "05 - No signals returning",
   "shortDescription": "Your first real ret2win challenge",
   "descriptionFile": "description.md",

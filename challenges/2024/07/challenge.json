@@ -1,4 +1,5 @@
 {
+  "id": "PWN101-07",
   "title": "07 - Shellcode",
   "shortDescription": "Lets get the hands dirty with some shellcode",
   "descriptionFile": "description.md",

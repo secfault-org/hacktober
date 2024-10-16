@@ -1,4 +1,5 @@
 {
+  "id": "PWN101-02",
   "title": "02 - Stack basics",
   "shortDescription": "Still basics, but can you control the overflow?",
   "descriptionFile": "description.md",
