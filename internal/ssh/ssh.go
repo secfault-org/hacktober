@@ -42,6 +42,14 @@ func NewSSHServer(ctx context.Context, backend *backend.Backend) (*SSHServer, er
 		cfg:    cfg,
 	}
 
+	challenges, err := backend.Repo.GetAllChallenges(ctx)
+	if err != nil {
+		return nil, err
+
+	}
+
+	scpHandler := NewScpChallengeHandler(challenges)
+
 	mw := []wish.Middleware{
 		rm.MiddlewareWithLogger(
 			backend.Logger(),
@@ -55,6 +63,7 @@ func NewSSHServer(ctx context.Context, backend *backend.Backend) (*SSHServer, er
 		wish.WithAddress(net.JoinHostPort(cfg.SSH.Host, cfg.SSH.Port)),
 		wish.WithHostKeyPath(cfg.SSH.KeyPath),
 		wish.WithPublicKeyAuth(s.PublicKeyHandler),
+		wish.WithSubsystem("sftp", s.sftpSubsystem(scpHandler)),
 		wish.WithMiddleware(mw...),
 		ssh.AllocatePty(),
 	}

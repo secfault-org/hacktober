@@ -5,5 +5,6 @@
   "descriptionFile": "description.md",
   "difficulty": 3,
   "releaseDate": "2024-10-06",
-  "containerImage": "hacktober2024_challenge_06"
+  "containerImage": "hacktober2024_challenge_06",
+  "challengeFile": "chall.tar.gz"
 }

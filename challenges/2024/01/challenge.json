@@ -6,6 +6,5 @@
   "difficulty": 1,
   "releaseDate": "2024-10-01",
   "containerImage": "hacktober2024_challenge_01",
-  "sourceFile": "chall.c",
-  "binaryFile": "chall"
+  "challengeFile": "chall.tar.gz"
 }

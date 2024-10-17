@@ -27,8 +27,8 @@ I built this project to play around [Bubbletea](https://github.com/charmbracelet
           - [x] source-code
       - [x] State and timer, statusbar?
       - [ ] Add extra actions
-          - [ ] Download source & executable
-              - [ ] Using scp
+          - [x] Download source & executable
+              - [x] Using scp
                 - [ ] cannot be used directly. Use copy command and scp middleware
           - [x] Spawn a container
     - [x] Start Challenge

@@ -6,7 +6,5 @@
   "difficulty": 2,
   "releaseDate": "2024-10-03",
   "containerImage": "hacktober2024_challenge_03",
-  "disableALSR": true,
-  "tags": ["pwn", "binary-exploitation"],
-  "topics": []
+  "challengeFile": "chall.tar.gz"
 }

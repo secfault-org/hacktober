@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -26,7 +27,7 @@ type challengeInfo struct {
 	Difficulty     uint8  `json:"difficulty"`
 	ReleaseDate    string `json:"releaseDate"`
 	ContainerImage string `json:"containerImage"`
-	DisableASLR    bool   `json:"disableASLR"`
+	ChallengeFile  string `json:"challengeFile"`
 }
 
 var _ ChallengeRepository = (*challengeRepo)(nil)
@@ -51,9 +52,9 @@ func (f *challengeRepo) GetAllChallenges(ctx context.Context) ([]challenge.Chall
 	return challenges, nil
 }
 
-func readChallenge(basedir string, challengeDir string) (challenge.Challenge, error) {
-
-	jsonFile, err := os.ReadFile(path.Join(basedir, challengeDir, "challenge.json"))
+func readChallenge(basedir string, subDir string) (challenge.Challenge, error) {
+	challengeDir := path.Join(basedir, subDir)
+	jsonFile, err := os.ReadFile(path.Join(challengeDir, "challenge.json"))
 	if err != nil {
 		return challenge.Challenge{}, err
 	}
@@ -66,8 +67,12 @@ func readChallenge(basedir string, challengeDir string) (challenge.Challenge, er
 		return challenge.Challenge{}, err
 	}
 
-	text, err := os.ReadFile(path.Join(basedir, challengeDir, challengeJson.DescFile))
+	text, err := os.ReadFile(path.Join(challengeDir, challengeJson.DescFile))
+	if err != nil {
+		return challenge.Challenge{}, err
+	}
 
+	challengeFile, err := filepath.Abs(path.Join(challengeDir, challengeJson.ChallengeFile))
 	if err != nil {
 		return challenge.Challenge{}, err
 	}
@@ -79,5 +84,6 @@ func readChallenge(basedir string, challengeDir string) (challenge.Challenge, er
 		ChallengeMarkdown: string(text),
 		ReleaseDate:       releaseDate,
 		ContainerImage:    challengeJson.ContainerImage,
+		ChallengeFile:     challengeFile,
 	}, nil
 }

@@ -14,8 +14,11 @@ $(TARGET_NAME): $(SRCS)
 run: $(TARGET_NAME)
 	FLAG=this_is_only_a_test_flag ./$(TARGET_NAME)
 
+archive: $(TARGET_NAME)
+	tar -czvf $(TARGET_NAME).tar.gz $(SRCS) $(TARGET_NAME) Makefile
+
 dockerfile: $(TARGET_NAME)
 	podman build -t $(DOCKER_NAME) .
 
 clean:
-	rm -f $(TARGET_NAME)
+	rm -f $(TARGET_NAME) $(TARGET_NAME).tar.gz
