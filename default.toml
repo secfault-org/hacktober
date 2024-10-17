@@ -2,11 +2,11 @@
 Host = "localhost"
 Port = 22222
 PublicUrl = "http://localhost:22222"
-KeyPath = "/home/pd/.config/hacktober/.ssh/id_ed25519"
+KeyPath = ".ssh/id_ed25519"
 
 [container]
 ContainerPort = 1337
 TimeoutInMinutes = 30
 
 [challenge]
-BaseDir = "/home/pd/dev/go/hacktopber2024/challenges/2024"
+BaseDir = "challenges/2024"
