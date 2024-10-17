@@ -15,7 +15,6 @@ void setup() {
 
 void vulnerable() {
   char buffer[512];
-  printf("%p\n", buffer);
   gets(buffer);
 }
 
