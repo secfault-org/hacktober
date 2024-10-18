@@ -1,0 +1,10 @@
+{
+  "id": "PWN101-08",
+  "title": "08 - Format-String leaking",
+  "shortDescription": "Get into format string vulnerabilities",
+  "descriptionFile": "description.md",
+  "difficulty": 1,
+  "releaseDate": "2024-10-08",
+  "containerImage": "hacktober2024_challenge_08",
+  "challengeFile": "chall.tar.gz"
+}
