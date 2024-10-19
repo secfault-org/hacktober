@@ -1,0 +1,10 @@
+{
+  "id": "PWN101-10",
+  "title": "10 - Format-String deadbeef",
+  "shortDescription": "Let the magic happen",
+  "descriptionFile": "description.md",
+  "difficulty": 4,
+  "releaseDate": "2024-10-10",
+  "containerImage": "hacktober2024_challenge_10",
+  "challengeFile": "chall.tar.gz"
+}

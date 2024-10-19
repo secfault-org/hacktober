@@ -1,0 +1,10 @@
+{
+  "id": "PWN101-09",
+  "title": "09 - Format-String extended",
+  "shortDescription": "Explode the buffer",
+  "descriptionFile": "description.md",
+  "difficulty": 1,
+  "releaseDate": "2024-10-09",
+  "containerImage": "hacktober2024_challenge_09",
+  "challengeFile": "chall.tar.gz"
+}
