@@ -70,8 +70,8 @@ void setup() {
 }
 
 void vulnerable() {
-  char buffer[32];
   char* flag = getenv("FLAG");
+  char buffer[32];
 
   printf("Enter your name: ");
   fgets(buffer, sizeof(buffer), stdin);
