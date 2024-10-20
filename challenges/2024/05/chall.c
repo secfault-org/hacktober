@@ -10,12 +10,7 @@
 char *gets(char *);
 
 void win() {
-  char* flag = getenv("FLAG");
-  if (flag == NULL) {
-    puts("Uh oh, the flag is missing. Please contact an admin if you are running ");
-    exit(1);
-  }
-  printf("Flag: %s\n", flag);
+  write(STDOUT_FILENO, getenv("FLAG"), 32);
   exit(0);
 }
 

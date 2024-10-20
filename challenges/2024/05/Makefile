@@ -12,7 +12,7 @@ $(TARGET_NAME): $(SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 run: $(TARGET_NAME)
-	FLAG=this_is_only_a_test_flag ./$(TARGET_NAME)
+	FLAG=flag{this_is_only_a_test_flag_x} ./$(TARGET_NAME)
 
 archive: $(TARGET_NAME)
 	tar -czvf $(TARGET_NAME).tar.gz $(SRCS) $(TARGET_NAME) Makefile
