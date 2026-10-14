@@ -12,7 +12,7 @@
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
 
-    hacktober = pkgs.buildGoModule {
+    hacktober = pkgs.buildGoModule.override { go = pkgs.go_1_27; } {
         pname = "hacktober";
         version = "0.1.0";
         src = ./.;
