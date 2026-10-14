@@ -16,7 +16,7 @@
         pname = "hacktober";
         version = "0.1.0";
         src = ./.;
-        vendorHash = pkgs.lib.fakeHash;
+        vendorHash = "sha256-LhBbKXYmqY2vurRbYg7kcIlPQXf5V54Q9gccPGubEls=";
     };
 
     challengeData = pkgs.runCommand "hacktober-challenges" { } ''
