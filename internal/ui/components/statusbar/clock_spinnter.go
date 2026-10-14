@@ -1,8 +1,9 @@
 package statusbar
 
 import (
-	"github.com/charmbracelet/bubbles/spinner"
 	"time"
+
+	"charm.land/bubbles/v2/spinner"
 )
 
 var (

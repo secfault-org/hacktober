@@ -3,8 +3,10 @@ package common
 import (
 	"context"
 	"encoding/hex"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"math/rand"
+	"time"
+
+	tea "charm.land/bubbletea/v2"
 	"github.com/secfault-org/hacktober/internal/backend"
 	"github.com/secfault-org/hacktober/internal/container"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
@@ -13,8 +15,6 @@ import (
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/keymap"
 	"github.com/secfault-org/hacktober/internal/ui/styles"
-	"math/rand"
-	"time"
 )
 
 type Common struct {
@@ -22,23 +22,21 @@ type Common struct {
 	Width, Height   int
 	Styles          *styles.Styles
 	KeyMap          *keymap.KeyMap
-	Renderer        *lipgloss.Renderer
 	Backend         *backend.Backend
 	activeChallenge *challenge.ActiveChallenge
 }
 
-func NewCommon(ctx context.Context, out *lipgloss.Renderer, width, height int, b *backend.Backend) Common {
+func NewCommon(ctx context.Context, width, height int, b *backend.Backend) Common {
 	if ctx == nil {
 		ctx = context.TODO()
 	}
 	return Common{
-		ctx:      ctx,
-		Width:    width,
-		Height:   height,
-		Renderer: out,
-		Styles:   styles.DefaultStyles(out),
-		KeyMap:   keymap.DefaultKeyMap(),
-		Backend:  b,
+		ctx:     ctx,
+		Width:   width,
+		Height:  height,
+		Styles:  styles.DefaultStyles(),
+		KeyMap:  keymap.DefaultKeyMap(),
+		Backend: b,
 	}
 }
 

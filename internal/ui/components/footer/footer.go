@@ -1,10 +1,10 @@
 package footer
 
 import (
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
 )
@@ -40,20 +40,20 @@ func New(c common.Common, keymap help.KeyMap) *Footer {
 func (f *Footer) SetSize(width, height int) {
 	f.common.SetSize(width, height)
 	f.statusbar.SetSize(width, height)
-	f.help.Width = width - f.common.Styles.Footer.GetHorizontalFrameSize()
+	f.help.SetWidth(width - f.common.Styles.Footer.GetHorizontalFrameSize())
 }
 
 func (f *Footer) Init() tea.Cmd {
 	return nil
 }
 
-func (f *Footer) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *Footer) Update(msg tea.Msg) (*Footer, tea.Cmd) {
 	switch msg.(type) {
 	case ToggleHelpMsg:
 		f.hideHelp = !f.hideHelp
 	}
 	s, cmd := f.statusbar.Update(msg)
-	f.statusbar = s.(*statusbar.Model)
+	f.statusbar = s
 	return f, cmd
 }
 

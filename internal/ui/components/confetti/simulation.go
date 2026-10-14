@@ -2,9 +2,10 @@ package confetti
 
 import (
 	"fmt"
-	"github.com/charmbracelet/harmonica"
-	"github.com/charmbracelet/lipgloss"
+	"image/color"
 	"strings"
+
+	"github.com/charmbracelet/harmonica"
 )
 
 type System struct {
@@ -14,7 +15,7 @@ type System struct {
 
 type Particle struct {
 	Char    string
-	Color   lipgloss.Color
+	Color   color.Color
 	Physics *harmonica.Projectile
 	Hidden  bool
 }

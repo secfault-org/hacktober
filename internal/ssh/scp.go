@@ -1,13 +1,14 @@
 package ssh
 
 import (
-	"github.com/charmbracelet/ssh"
-	"github.com/pkg/sftp"
-	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"io"
 	"io/fs"
 	"os"
 	"strings"
+
+	"charm.land/ssh"
+	"github.com/pkg/sftp"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 )
 
 type challengeHandler struct {

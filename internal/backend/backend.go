@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/secfault-org/hacktober/internal/config"
 	"github.com/secfault-org/hacktober/internal/container"
 	"github.com/secfault-org/hacktober/internal/repository"

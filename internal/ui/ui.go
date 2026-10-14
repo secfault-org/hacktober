@@ -1,10 +1,12 @@
 package ui
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/timer"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"time"
+
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/timer"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/model/container"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
@@ -14,7 +16,6 @@ import (
 	"github.com/secfault-org/hacktober/internal/ui/components/selector"
 	"github.com/secfault-org/hacktober/internal/ui/pages/challenge_detail"
 	"github.com/secfault-org/hacktober/internal/ui/pages/challenges"
-	"time"
 )
 
 type page int
@@ -172,12 +173,12 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	con, cmd := ui.confetti.Update(msg)
-	ui.confetti = con.(confetti.Model)
+	ui.confetti = con
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
 	f, cmd := ui.footer.Update(msg)
-	ui.footer = f.(*footer.Footer)
+	ui.footer = f
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
@@ -210,7 +211,7 @@ func hideConfettiCmd(d time.Duration) tea.Cmd {
 	}
 }
 
-func (ui *Ui) View() string {
+func (ui *Ui) content() string {
 	if ui.showConfetti {
 		return ui.confetti.View()
 	}
@@ -230,6 +231,10 @@ func (ui *Ui) View() string {
 	)
 
 	return ui.common.Styles.App.Render(view)
+}
+
+func (ui *Ui) View() tea.View {
+	return tea.NewView(ui.content())
 }
 
 func (ui *Ui) selectChallengeCmd(challenge *challenge.Challenge) tea.Cmd {

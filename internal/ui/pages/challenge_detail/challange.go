@@ -1,9 +1,9 @@
 package challenge_detail
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/glamour"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/glamour/v2"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
@@ -21,7 +21,7 @@ func New(common common.Common) *ChallengeDetailPage {
 		common:   common,
 		viewport: viewport.New(common),
 	}
-	page.SetSize(common.Height, common.Width)
+	page.SetSize(common.Width, common.Height)
 	return page
 }
 
@@ -34,8 +34,9 @@ func (c *ChallengeDetailPage) Init() tea.Cmd {
 		if width > 120 {
 			width = 120
 		}
+
 		r, err := glamour.NewTermRenderer(
-			glamour.WithAutoStyle(),
+			glamour.WithStylePath("tokyo-night"),
 			glamour.WithWordWrap(width),
 		)
 		if err != nil {
@@ -50,7 +51,7 @@ func (c *ChallengeDetailPage) Init() tea.Cmd {
 	return nil
 }
 
-func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (c *ChallengeDetailPage) Update(msg tea.Msg) (common.Page, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
 	switch msg := msg.(type) {
 	case commands.SelectChallengeMsg:
@@ -69,7 +70,7 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		c.SetSize(msg.Width, msg.Height)
 	}
 	v, cmd := c.viewport.Update(msg)
-	c.viewport = v.(*viewport.Viewport)
+	c.viewport = v
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}

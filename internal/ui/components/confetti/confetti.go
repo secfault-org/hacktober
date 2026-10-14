@@ -1,12 +1,13 @@
 package confetti
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/harmonica"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/internal/ui/common"
 	"math/rand"
 	"time"
+
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/harmonica"
+	"github.com/secfault-org/hacktober/internal/ui/common"
 )
 
 func Sample[T any](arr []T) T {
@@ -37,7 +38,7 @@ type Model struct {
 }
 
 func Spawn(width, height int) []*Particle {
-	particles := []*Particle{}
+	var particles []*Particle
 	for i := 0; i < numParticles; i++ {
 		x := float64(width / 2)
 		y := float64(height)
@@ -77,7 +78,7 @@ func (m Model) Init() tea.Cmd {
 
 // Update updates the model every frame, it handles the animation loop and
 // updates the particle physics every frame
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case frameMsg:
 		m.system.Update()

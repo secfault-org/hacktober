@@ -3,15 +3,16 @@ package podman
 import (
 	"context"
 	"fmt"
-	nettypes "github.com/containers/common/libnetwork/types"
-	"github.com/containers/podman/v5/pkg/bindings"
-	"github.com/containers/podman/v5/pkg/bindings/containers"
-	"github.com/containers/podman/v5/pkg/bindings/images"
-	"github.com/containers/podman/v5/pkg/specgen"
-	"github.com/secfault-org/hacktober/internal/model/container"
 	"os"
 	"runtime"
 	"strconv"
+
+	"github.com/secfault-org/hacktober/internal/model/container"
+	nettypes "go.podman.io/common/libnetwork/types"
+	"go.podman.io/podman/v6/pkg/bindings"
+	"go.podman.io/podman/v6/pkg/bindings/containers"
+	"go.podman.io/podman/v6/pkg/bindings/images"
+	"go.podman.io/podman/v6/pkg/specgen"
 )
 
 type Service struct {

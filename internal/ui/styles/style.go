@@ -1,6 +1,6 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss"
+import "charm.land/lipgloss/v2"
 
 type Styles struct {
 	NoContent lipgloss.Style
@@ -43,36 +43,36 @@ type Styles struct {
 	HelpDivider lipgloss.Style
 }
 
-func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
+func DefaultStyles() *Styles {
 
 	style := new(Styles)
 
-	style.App = renderer.NewStyle().
+	style.App = lipgloss.NewStyle().
 		Margin(0, 0)
 
-	style.NoContent = renderer.NewStyle().
+	style.NoContent = lipgloss.NewStyle().
 		MarginTop(1).
 		MarginLeft(2).
 		Foreground(lipgloss.Color("242"))
 
-	style.ChallengeListItemContainer = renderer.NewStyle().
+	style.ChallengeListItemContainer = lipgloss.NewStyle().
 		PaddingLeft(1).
 		Border(lipgloss.Border{
 			Left: " ",
 		}, false, false, false, true).
 		Height(2)
 
-	style.ChallengeListItem.Normal.Base = renderer.NewStyle().
+	style.ChallengeListItem.Normal.Base = lipgloss.NewStyle().
 		PaddingLeft(1).
 		Border(lipgloss.Border{Left: " "}, false, false, false, true).
 		Height(2)
 
-	style.ChallengeListItem.Normal.Title = renderer.NewStyle().Bold(true)
+	style.ChallengeListItem.Normal.Title = lipgloss.NewStyle().Bold(true)
 
-	style.ChallengeListItem.Normal.Desc = renderer.NewStyle().
+	style.ChallengeListItem.Normal.Desc = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("243"))
 
-	style.ChallengeListItem.Normal.ReleaseDate = renderer.NewStyle().
+	style.ChallengeListItem.Normal.ReleaseDate = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("243"))
 
 	style.ChallengeListItem.Active.Base = style.ChallengeListItem.Normal.Base.
@@ -88,48 +88,48 @@ func DefaultStyles(renderer *lipgloss.Renderer) *Styles {
 	style.ChallengeListItem.Active.ReleaseDate = style.ChallengeListItem.Normal.ReleaseDate.
 		Foreground(lipgloss.Color("212"))
 
-	style.ChallengeDetail.Base = renderer.NewStyle()
+	style.ChallengeDetail.Base = lipgloss.NewStyle()
 
-	style.ChallengeDetail.Title = renderer.NewStyle().
+	style.ChallengeDetail.Title = lipgloss.NewStyle().
 		Padding(0, 2)
 
-	style.ChallengeDetail.Body = renderer.NewStyle().
+	style.ChallengeDetail.Body = lipgloss.NewStyle().
 		Margin(1, 0)
 
-	style.Statusbar.Base = renderer.NewStyle().
+	style.Statusbar.Base = lipgloss.NewStyle().
 		Height(1)
 
-	style.Statusbar.Spinner = renderer.NewStyle().
+	style.Statusbar.Spinner = lipgloss.NewStyle().
 		Padding(0, 1).
 		Foreground(lipgloss.Color("255")).
 		Background(lipgloss.Color("33"))
 
-	style.Statusbar.Info = renderer.NewStyle().
+	style.Statusbar.Info = lipgloss.NewStyle().
 		Padding(0, 1).
 		Background(lipgloss.Color("235")).
 		Foreground(lipgloss.Color("243"))
 
-	style.Statusbar.Help = renderer.NewStyle().
+	style.Statusbar.Help = lipgloss.NewStyle().
 		Padding(0, 1).
 		Foreground(lipgloss.Color("243")).
 		Background(lipgloss.Color("237"))
 
-	style.Statusbar.Timer = renderer.NewStyle().
+	style.Statusbar.Timer = lipgloss.NewStyle().
 		Padding(0, 1).
 		Foreground(lipgloss.Color("255")).
 		Background(lipgloss.Color("33"))
 
-	style.Footer = renderer.NewStyle().
+	style.Footer = lipgloss.NewStyle().
 		MarginTop(1).
 		Height(1)
 
-	style.HelpKey = renderer.NewStyle().
+	style.HelpKey = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("241"))
 
-	style.HelpValue = renderer.NewStyle().
+	style.HelpValue = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("239"))
 
-	style.HelpDivider = renderer.NewStyle().
+	style.HelpDivider = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("237")).
 		SetString(" • ")
 

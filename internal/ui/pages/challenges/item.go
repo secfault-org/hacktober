@@ -2,14 +2,15 @@ package challenges
 
 import (
 	"fmt"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/secfault-org/hacktober/internal/model/challenge"
-	"github.com/secfault-org/hacktober/internal/ui/common"
 	"io"
 	"strings"
 	"time"
+
+	"charm.land/bubbles/v2/list"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
+	"github.com/secfault-org/hacktober/internal/ui/common"
 )
 
 type Item struct {

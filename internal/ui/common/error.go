@@ -1,6 +1,6 @@
 package common
 
-import tea "github.com/charmbracelet/bubbletea"
+import tea "charm.land/bubbletea/v2"
 
 // ErrorMsg is a Bubble Tea message that represents an error.
 type ErrorMsg error

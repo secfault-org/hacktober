@@ -1,16 +1,17 @@
 package statusbar
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/timer"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"time"
+
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/timer"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/util"
-	"time"
 )
 
 type Model struct {
@@ -37,7 +38,7 @@ func New(common common.Common) *Model {
 
 func (bar *Model) defaultTimer() timer.Model {
 	cfg := bar.common.Backend.Config
-	return timer.NewWithInterval(time.Duration(cfg.Container.TimeoutInMinutes)*time.Minute, time.Second)
+	return timer.New(time.Duration(cfg.Container.TimeoutInMinutes)*time.Minute, timer.WithInterval(time.Second))
 }
 
 func (bar *Model) SetSize(width, height int) {
@@ -49,7 +50,7 @@ func (bar *Model) Init() tea.Cmd {
 	return bar.spinner.Tick
 }
 
-func (bar *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (bar *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -121,12 +122,11 @@ func (bar *Model) View() string {
 
 	main = sbStyle.Info.Width(bar.common.Width - w(countdown) - w(help)).Render(main)
 
-	return bar.common.Renderer.NewStyle().MaxWidth(bar.common.Width).
-		Render(
-			lipgloss.JoinHorizontal(lipgloss.Top,
-				main,
-				countdown,
-				help,
-			),
-		)
+	s := lipgloss.JoinHorizontal(lipgloss.Top,
+		main,
+		countdown,
+		help,
+	)
+
+	return lipgloss.NewStyle().MaxWidth(bar.common.Width).Render(s)
 }

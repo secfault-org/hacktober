@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"context"
-	"github.com/charmbracelet/log"
+	"os"
+
+	"charm.land/log/v2"
 	"github.com/secfault-org/hacktober/internal/cmd/serve"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var (

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/secfault-org/hacktober/internal/model/container"
 	"github.com/spf13/viper"
 )

@@ -1,8 +1,9 @@
 package challenges
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/selector"
 )
@@ -50,19 +51,19 @@ func (c *ChallengePage) Init() tea.Cmd {
 	)
 }
 
-func (c *ChallengePage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m, cmd := c.selector.Update(msg)
-	c.selector = m.(*selector.Selector)
+func (c *ChallengePage) Update(msg tea.Msg) (common.Page, tea.Cmd) {
+	s, cmd := c.selector.Update(msg)
+	c.selector = s
 	return c, cmd
 }
 
 func (c *ChallengePage) View() string {
 	wm, hm := c.getMargins()
-	ss := c.common.Renderer.NewStyle().
+	style := lipgloss.NewStyle().
 		Width(c.common.Width-wm).
 		Height(c.common.Height-hm).
 		Margin(2, 1, 0, 1)
-	return ss.Render(c.selector.View())
+	return style.Render(c.selector.View())
 }
 
 func (c *ChallengePage) getMargins() (wm, hm int) {

@@ -1,12 +1,14 @@
 package common
 
 import (
-	"github.com/charmbracelet/bubbles/help"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/help"
+	tea "charm.land/bubbletea/v2"
 )
 
 type Page interface {
-	tea.Model
 	help.KeyMap
+	Init() tea.Cmd
+	Update(tea.Msg) (Page, tea.Cmd)
+	View() string
 	SetSize(width, height int)
 }

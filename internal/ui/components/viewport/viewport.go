@@ -1,9 +1,9 @@
 package viewport
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 )
 
@@ -14,7 +14,7 @@ type Viewport struct {
 
 // New returns a new Viewport.
 func New(c common.Common) *Viewport {
-	vp := viewport.New(c.Width, c.Height)
+	vp := viewport.New(viewport.WithHeight(c.Height), viewport.WithWidth(c.Width))
 	vp.MouseWheelEnabled = true
 	return &Viewport{
 		common: c,
@@ -24,15 +24,15 @@ func New(c common.Common) *Viewport {
 
 func (v *Viewport) SetSize(width, height int) {
 	v.common.SetSize(width, height)
-	v.Model.Width = width
-	v.Model.Height = height
+	v.Model.SetWidth(width)
+	v.Model.SetHeight(height)
 }
 
 func (v *Viewport) Init() tea.Cmd {
-	return nil
+	return v.Model.Init()
 }
 
-func (v *Viewport) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (v *Viewport) Update(msg tea.Msg) (*Viewport, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -61,30 +61,6 @@ func (v *Viewport) GotoTop() {
 
 func (v *Viewport) GotoBottom() {
 	v.Model.GotoBottom()
-}
-
-func (v *Viewport) HalfViewDown() {
-	v.Model.HalfViewDown()
-}
-
-func (v *Viewport) HalfViewUp() {
-	v.Model.HalfViewUp()
-}
-
-func (v *Viewport) ViewUp() []string {
-	return v.Model.ViewUp()
-}
-
-func (v *Viewport) ViewDown() []string {
-	return v.Model.ViewDown()
-}
-
-func (v *Viewport) LineUp(n int) []string {
-	return v.Model.LineUp(n)
-}
-
-func (v *Viewport) LineDown(n int) []string {
-	return v.Model.LineDown(n)
 }
 
 func (v *Viewport) ScrollPercent() float64 {

@@ -3,8 +3,13 @@ package serve
 import (
 	"context"
 	"errors"
-	"github.com/charmbracelet/log"
-	cssh "github.com/charmbracelet/ssh"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"charm.land/log/v2"
+	cssh "charm.land/ssh"
 	"github.com/secfault-org/hacktober/internal/backend"
 	"github.com/secfault-org/hacktober/internal/config"
 	"github.com/secfault-org/hacktober/internal/container/podman"
@@ -12,10 +17,6 @@ import (
 	"github.com/secfault-org/hacktober/internal/ssh"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 var (

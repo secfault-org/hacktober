@@ -1,9 +1,9 @@
 package selector
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/list"
+	tea "charm.land/bubbletea/v2"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 )
 
@@ -52,7 +52,7 @@ func (s *Selector) SelectItemCmd() tea.Msg {
 
 func (s *Selector) Init() tea.Cmd { return nil }
 
-func (s *Selector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *Selector) Update(msg tea.Msg) (*Selector, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
 
 	switch msg := msg.(type) {

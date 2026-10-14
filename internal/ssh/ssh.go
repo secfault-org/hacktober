@@ -2,16 +2,17 @@ package ssh
 
 import (
 	"context"
-	"github.com/charmbracelet/log"
-	"github.com/charmbracelet/ssh"
-	"github.com/charmbracelet/wish"
-	"github.com/charmbracelet/wish/activeterm"
-	bm "github.com/charmbracelet/wish/bubbletea"
-	"github.com/charmbracelet/wish/logging"
-	rm "github.com/charmbracelet/wish/recover"
+	"net"
+
+	"charm.land/log/v2"
+	"charm.land/ssh"
+	"charm.land/wish/v2"
+	"charm.land/wish/v2/activeterm"
+	bm "charm.land/wish/v2/bubbletea"
+	"charm.land/wish/v2/logging"
+	rm "charm.land/wish/v2/recover"
 	"github.com/secfault-org/hacktober/internal/backend"
 	"github.com/secfault-org/hacktober/internal/config"
-	"net"
 )
 
 type SSHServer struct {
