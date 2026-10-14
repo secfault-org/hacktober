@@ -16,6 +16,7 @@ type SSHConfig struct {
 type ContainerConfig struct {
 	ContainerPort    container.Port
 	TimeoutInMinutes int
+	RegistryPrefix   string
 }
 
 type ChallengeConfig struct {

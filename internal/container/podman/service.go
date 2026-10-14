@@ -62,6 +62,9 @@ func (s *Service) StartContainer(ctx context.Context, image, flag string, expose
 	if s.runningContainer != nil {
 		return nil, fmt.Errorf("container already running")
 	}
+	if err := s.PullImage(ctx, image); err != nil {
+		return nil, fmt.Errorf("pull %s: %w", image, err)
+	}
 	spec := specgen.NewSpecGenerator(image, false)
 	spec.PortMappings = []nettypes.PortMapping{
 		{

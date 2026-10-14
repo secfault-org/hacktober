@@ -114,7 +114,8 @@ func (c *Common) StartChallenge(chall *challenge.Challenge) []tea.Cmd {
 			return commands.ContainerErrorMsg(err)
 		}
 		flag := hex.EncodeToString(b)[:32]
-		runningContainer, err := c.ContainerService().StartContainer(c.ctx, chall.ContainerImage, flag, cfg.Container.ContainerPort)
+		image := container.ResolveImage(cfg.Container.RegistryPrefix, chall.ContainerImage)
+		runningContainer, err := c.ContainerService().StartContainer(c.ctx, image, flag, cfg.Container.ContainerPort)
 		if err != nil {
 			c.KeyMap.SpawnContainer.SetEnabled(true)
 			return commands.ContainerErrorMsg(err)
