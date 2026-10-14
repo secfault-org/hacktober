@@ -37,7 +37,7 @@
             TimeoutInMinutes = 30;
             RegistryPrefix = "10.0.0.1:5000";
         };
-        challenge.BaseDir = "${challengeData}";
+        challenge.BaseDir = "${challengeData}/2024";
     };
 
     hostKey = pkgs.writeShellScript "hacktober-hostkey" ''
