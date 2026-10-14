@@ -17,6 +17,8 @@
         version = "0.1.0";
         src = ./.;
         vendorHash = "sha256-LhBbKXYmqY2vurRbYg7kcIlPQXf5V54Q9gccPGubEls=";
+        nativeBuildInputs = [ pkgs.pkg-config ];
+        buildInputs = [ pkgs.gpgme pkgs.btrfs-progs pkgs.lvm2 ];
     };
 
     challengeData = pkgs.runCommand "hacktober-challenges" { } ''
