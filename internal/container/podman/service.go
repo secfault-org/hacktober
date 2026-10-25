@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"runtime"
 	"strconv"
 
 	"github.com/secfault-org/hacktober/internal/model/container"
@@ -15,25 +14,9 @@ import (
 	"go.podman.io/podman/v6/pkg/specgen"
 )
 
-type Service struct {
-	runningContainer *container.Container
-}
+type Service struct{}
 
-func NewContainerService(ctx context.Context) *Service {
-	service := &Service{
-		runningContainer: nil,
-	}
-
-	// TODO: Find a better way to handle this
-	runtime.SetFinalizer(service, func(s *Service) {
-		if s.runningContainer != nil {
-			ctx, _ := s.Connect(context.Background())
-			_ = s.StopContainer(ctx, s.runningContainer.ID)
-		}
-	})
-
-	return service
-}
+func NewContainerService() *Service { return &Service{} }
 
 func (s *Service) Connect(ctx context.Context) (context.Context, error) {
 	sock_dir := os.Getenv("XDG_RUNTIME_DIR")
@@ -51,7 +34,8 @@ func (s *Service) Connect(ctx context.Context) (context.Context, error) {
 }
 
 func (s *Service) PullImage(ctx context.Context, image string) error {
-	_, err := images.Pull(ctx, image, &images.PullOptions{})
+	policy := "missing"
+	_, err := images.Pull(ctx, image, &images.PullOptions{Policy: &policy})
 	if err != nil {
 		return err
 	}
@@ -59,9 +43,6 @@ func (s *Service) PullImage(ctx context.Context, image string) error {
 }
 
 func (s *Service) StartContainer(ctx context.Context, image, flag string, exposedContainerPort container.Port) (*container.Container, error) {
-	if s.runningContainer != nil {
-		return nil, fmt.Errorf("container already running")
-	}
 	if err := s.PullImage(ctx, image); err != nil {
 		return nil, fmt.Errorf("pull %s: %w", image, err)
 	}
@@ -77,6 +58,8 @@ func (s *Service) StartContainer(ctx context.Context, image, flag string, expose
 		"FLAG": flag,
 	}
 	spec.SeccompProfilePath = "unconfined"
+	remove := true
+	spec.Remove = &remove
 	r, err := containers.CreateWithSpec(ctx, spec, &containers.CreateOptions{})
 	if err != nil {
 		return nil, err
@@ -99,13 +82,11 @@ func (s *Service) StartContainer(ctx context.Context, image, flag string, expose
 		return nil, err
 	}
 
-	s.runningContainer = &container.Container{
+	return &container.Container{
 		ID:       r.ID,
 		HostPort: port,
 		State:    container.Running,
-	}
-
-	return s.runningContainer, nil
+	}, nil
 }
 
 func (s *Service) GetHostPort(ctx context.Context, containerId container.Id, containerPort container.Port) (container.Port, error) {
@@ -120,26 +101,12 @@ func (s *Service) GetHostPort(ctx context.Context, containerId container.Id, con
 			return 0, err
 		}
 		return uint16(assignedPort), nil
-	} else {
-		return 0, fmt.Errorf("port %d not found for container %s", containerPort, containerId)
 	}
+
+	return 0, fmt.Errorf("port %d not found for container %s", containerPort, containerId)
 }
 
 func (s *Service) StopContainer(ctx context.Context, containerId container.Id) error {
-	if s.runningContainer == nil {
-		return fmt.Errorf("container not running")
-	}
-	s.runningContainer.State = container.Stopping
-	err := containers.Stop(ctx, containerId, &containers.StopOptions{})
-	if err != nil {
-		return err
-	}
-	_, err = containers.Wait(ctx, containerId, &containers.WaitOptions{
-		Conditions: []string{"stopped"},
-	})
-	if err != nil {
-		return err
-	}
-	s.runningContainer = nil
-	return nil
+	timeout := uint(3)
+	return containers.Stop(ctx, containerId, &containers.StopOptions{Timeout: &timeout})
 }

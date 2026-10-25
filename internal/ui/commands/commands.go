@@ -1,8 +1,11 @@
 package commands
 
 import (
+	"context"
+
 	tea "charm.land/bubbletea/v2"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
+	"github.com/secfault-org/hacktober/internal/session"
 )
 
 type SelectChallengeMsg *challenge.Challenge
@@ -24,9 +27,6 @@ type EnteringFlagCanceledMsg struct{}
 
 type ChallengeSolvedMsg *challenge.Challenge
 type WrongFlagMsg struct{}
-
-type Quitting struct{}
-type TeardownMsg struct{}
 
 func ChallengeStarting(challenge *challenge.Challenge) tea.Cmd {
 	return func() tea.Msg {
@@ -60,22 +60,51 @@ func FlagEntered(submittedFlag string) tea.Cmd {
 	}
 }
 
-func QuittingCmd(activeChallenge *challenge.ActiveChallenge) tea.Cmd {
+func SubmitFlag(sess *session.Session, flag string) tea.Cmd {
 	return func() tea.Msg {
-		if activeChallenge != nil && activeChallenge.IsRunning() {
-			return TeardownMsg{}
-		} else {
-			return tea.QuitMsg{}
+		if !sess.CheckFlag(flag) {
+			return WrongFlagMsg{}
 		}
+		active := sess.ActiveChallenge()
+		if active == nil {
+			return nil
+		}
+
+		return ChallengeSolvedMsg(active.Challenge)
 	}
 }
 
-func SubmitFlag(submittedFlag string, activeChallenge *challenge.ActiveChallenge) tea.Cmd {
+func StartChallenge(sess *session.Session, ch *challenge.Challenge) tea.Cmd {
 	return func() tea.Msg {
-		if submittedFlag == activeChallenge.Flag {
-			return ChallengeSolvedMsg(activeChallenge.Challenge)
-		} else {
-			return WrongFlagMsg{}
+		if !sess.SetStarting(ch) {
+			return nil
 		}
+
+		return ChallengeStaringMsg(ch)
+	}
+}
+
+func SpawnContainer(sess *session.Session, ctx context.Context, ch *challenge.Challenge) tea.Cmd {
+	return func() tea.Msg {
+		ac, err := sess.Start(ctx, ch)
+		if err != nil {
+			return ContainerErrorMsg(err)
+		}
+
+		return ChallengeStartedMsg(ac)
+	}
+}
+
+func StopChallenge(sess *session.Session, ctx context.Context) tea.Cmd {
+	return func() tea.Msg {
+		active := sess.ActiveChallenge()
+		if active == nil {
+			return nil
+		}
+		ch := active.Challenge
+		if err := sess.Stop(ctx); err != nil {
+			return ContainerErrorMsg(err)
+		}
+		return ChallengeStoppedMsg(ch)
 	}
 }

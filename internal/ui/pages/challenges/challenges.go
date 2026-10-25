@@ -3,22 +3,27 @@ package challenges
 import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/selector"
+	"github.com/secfault-org/hacktober/internal/ui/keymap"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 )
 
-type ChallengePage struct {
-	common   common.Common
-	selector *selector.Selector
+type ChallengesPage struct {
+	screen     styles.Themed
+	keyMap     *keymap.KeyMap
+	challenges []challenge.Challenge
+	selector   *selector.Selector
 }
 
-func New(common common.Common) *ChallengePage {
+func New(scr styles.Themed, keyMap *keymap.KeyMap, challs []challenge.Challenge) *ChallengesPage {
 
 	list := selector.New(
-		common,
+		scr,
+		keyMap,
 		[]selector.IdentifiableItem{},
-		NewItemDelegate(&common),
+		NewItemDelegate(scr),
 	)
 
 	list.Title = "Challenges - Hacktober 2024"
@@ -27,22 +32,17 @@ func New(common common.Common) *ChallengePage {
 	list.SetShowStatusBar(false)
 	list.DisableQuitKeybindings()
 
-	return &ChallengePage{
-		common:   common,
-		selector: list,
+	return &ChallengesPage{
+		challenges: challs,
+		keyMap:     keyMap,
+		selector:   list,
 	}
 }
 
-func (c *ChallengePage) Init() tea.Cmd {
-	ctx := c.common.Context()
-	challenges, err := c.common.Repo().GetAllChallenges(ctx)
-	if err != nil {
-		return common.ErrorCmd(err)
-	}
-
-	items := make([]selector.IdentifiableItem, len(challenges))
-	for i, it := range challenges {
-		items[i] = Item{Challenge: &it}
+func (c *ChallengesPage) Init() tea.Cmd {
+	items := make([]selector.IdentifiableItem, len(c.challenges))
+	for i := range c.challenges {
+		items[i] = Item{Challenge: &c.challenges[i]}
 	}
 
 	return tea.Batch(
@@ -51,49 +51,43 @@ func (c *ChallengePage) Init() tea.Cmd {
 	)
 }
 
-func (c *ChallengePage) Update(msg tea.Msg) (common.Page, tea.Cmd) {
+func (c *ChallengesPage) Update(msg tea.Msg) (common.Page, tea.Cmd) {
 	s, cmd := c.selector.Update(msg)
 	c.selector = s
 	return c, cmd
 }
 
-func (c *ChallengePage) View() string {
-	wm, hm := c.getMargins()
-	style := lipgloss.NewStyle().
-		Width(c.common.Width-wm).
-		Height(c.common.Height-hm).
-		Margin(2, 1, 0, 1)
-	return style.Render(c.selector.View())
+func (c *ChallengesPage) View() string {
+	return c.selector.View()
 }
 
-func (c *ChallengePage) getMargins() (wm, hm int) {
+func (c *ChallengesPage) getMargins() (wm, hm int) {
 	wm = 2
 	hm = 2
 	return
 }
 
-func (c *ChallengePage) SetSize(width, height int) {
-	c.common.SetSize(width, height)
+func (c *ChallengesPage) SetSize(width, height int) {
 	wm, hm := c.getMargins()
 	c.selector.SetSize(width-wm, height-hm)
 }
 
-func (c *ChallengePage) ShortHelp() []key.Binding {
+func (c *ChallengesPage) ShortHelp() []key.Binding {
 	keyBindings := make([]key.Binding, 0)
 	keyBindings = append(keyBindings,
-		c.common.KeyMap.UpDown,
-		c.common.KeyMap.Select,
+		c.keyMap.UpDown,
+		c.keyMap.Select,
 	)
 
 	return keyBindings
 }
 
-func (c *ChallengePage) FullHelp() [][]key.Binding {
+func (c *ChallengesPage) FullHelp() [][]key.Binding {
 	bindings := [][]key.Binding{}
 	bindings = append(bindings, []key.Binding{
 		c.selector.KeyMap.CursorUp,
 		c.selector.KeyMap.CursorDown,
-		c.common.KeyMap.Select,
+		c.keyMap.Select,
 	})
 
 	return bindings

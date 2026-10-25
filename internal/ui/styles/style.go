@@ -2,6 +2,10 @@ package styles
 
 import "charm.land/lipgloss/v2"
 
+type Themed interface {
+	Theme() *Styles
+}
+
 type Styles struct {
 	NoContent lipgloss.Style
 

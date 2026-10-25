@@ -1,136 +1,137 @@
 package common
 
-import (
-	"context"
-	"encoding/hex"
-	"math/rand"
-	"time"
-
-	tea "charm.land/bubbletea/v2"
-	"github.com/secfault-org/hacktober/internal/backend"
-	"github.com/secfault-org/hacktober/internal/container"
-	"github.com/secfault-org/hacktober/internal/model/challenge"
-	cm "github.com/secfault-org/hacktober/internal/model/container"
-	"github.com/secfault-org/hacktober/internal/repository"
-	"github.com/secfault-org/hacktober/internal/ui/commands"
-	"github.com/secfault-org/hacktober/internal/ui/keymap"
-	"github.com/secfault-org/hacktober/internal/ui/styles"
-)
-
-type Common struct {
-	ctx             context.Context
-	Width, Height   int
-	Styles          *styles.Styles
-	KeyMap          *keymap.KeyMap
-	Backend         *backend.Backend
-	activeChallenge *challenge.ActiveChallenge
-}
-
-func NewCommon(ctx context.Context, width, height int, b *backend.Backend) Common {
-	if ctx == nil {
-		ctx = context.TODO()
-	}
-	return Common{
-		ctx:     ctx,
-		Width:   width,
-		Height:  height,
-		Styles:  styles.DefaultStyles(),
-		KeyMap:  keymap.DefaultKeyMap(),
-		Backend: b,
-	}
-}
-
-func (c *Common) SetSize(width, height int) {
-	c.Width = width
-	c.Height = height
-}
-
-func (c *Common) IsChallengeRunning() bool {
-	return c.activeChallenge != nil && c.activeChallenge.IsRunning()
-}
-
-func (c *Common) SetActiveChallenge(challenge *challenge.ActiveChallenge) {
-	c.activeChallenge = challenge
-}
-
-func (c *Common) ActiveChallenge() *challenge.ActiveChallenge {
-	return c.activeChallenge
-}
-
-func (c *Common) Repo() repository.Repository {
-	return c.Backend.Repo
-}
-
-func (c *Common) ContainerService() container.Service {
-	return c.Backend.ContainerService
-}
-
-func (c *Common) Context() context.Context {
-	return c.ctx
-}
-
-func (c *Common) StopActiveChallenge() []tea.Cmd {
-	if c.activeChallenge == nil {
-		return nil
-	}
-
-	c.activeChallenge.Container.State = cm.Stopping
-
-	stopChallengeCmd := func() tea.Msg {
-		c.KeyMap.StopContainer.SetEnabled(false)
-		err := c.ContainerService().StopContainer(c.ctx, c.activeChallenge.Container.ID)
-		if err != nil {
-			c.KeyMap.StopContainer.SetEnabled(true)
-			return commands.ContainerErrorMsg(err)
-		}
-		c.KeyMap.SpawnContainer.SetEnabled(true)
-		chall := c.activeChallenge.Challenge
-		c.activeChallenge = nil
-		return commands.ChallengeStoppedMsg(chall)
-	}
-
-	return []tea.Cmd{
-		commands.ChallengeStopping(c.activeChallenge),
-		stopChallengeCmd,
-	}
-}
-
-func (c *Common) StartChallenge(chall *challenge.Challenge) []tea.Cmd {
-	c.KeyMap.SpawnContainer.SetEnabled(false)
-	cfg := c.Backend.Config
-
-	c.activeChallenge = &challenge.ActiveChallenge{
-		Challenge: chall,
-		Container: &cm.Container{
-			State: cm.Starting,
-		},
-	}
-
-	spawnCmd := func() tea.Msg {
-		src := rand.New(rand.NewSource(time.Now().UnixNano()))
-		b := make([]byte, 32)
-		if _, err := src.Read(b); err != nil {
-			c.KeyMap.SpawnContainer.SetEnabled(true)
-			return commands.ContainerErrorMsg(err)
-		}
-		flag := hex.EncodeToString(b)[:32]
-		image := container.ResolveImage(cfg.Container.RegistryPrefix, chall.ContainerImage)
-		runningContainer, err := c.ContainerService().StartContainer(c.ctx, image, flag, cfg.Container.ContainerPort)
-		if err != nil {
-			c.KeyMap.SpawnContainer.SetEnabled(true)
-			return commands.ContainerErrorMsg(err)
-		}
-		c.KeyMap.StopContainer.SetEnabled(true)
-		c.activeChallenge = &challenge.ActiveChallenge{
-			Challenge: chall,
-			Container: runningContainer,
-			Flag:      flag,
-		}
-		return commands.ChallengeStartedMsg(c.activeChallenge)
-	}
-
-	return []tea.Cmd{
-		commands.ChallengeStarting(chall),
-		spawnCmd,
-	}
-}
+//
+//import (
+//	"context"
+//	"encoding/hex"
+//	"math/rand"
+//	"time"
+//
+//	tea "charm.land/bubbletea/v2"
+//	"github.com/secfault-org/hacktober/internal/backend"
+//	"github.com/secfault-org/hacktober/internal/container"
+//	"github.com/secfault-org/hacktober/internal/model/challenge"
+//	cm "github.com/secfault-org/hacktober/internal/model/container"
+//	"github.com/secfault-org/hacktober/internal/repository"
+//	"github.com/secfault-org/hacktober/internal/ui/commands"
+//	"github.com/secfault-org/hacktober/internal/ui/keymap"
+//	"github.com/secfault-org/hacktober/internal/ui/styles"
+//)
+//
+//type Common struct {
+//	ctx             context.Context
+//	Width, Height   int
+//	Styles          *styles.Styles
+//	KeyMap          *keymap.KeyMap
+//	Backend         *backend.Backend
+//	activeChallenge *challenge.ActiveChallenge
+//}
+//
+//func NewCommon(ctx context.Context, width, height int, b *backend.Backend) Common {
+//	if ctx == nil {
+//		ctx = context.TODO()
+//	}
+//	return Common{
+//		ctx:     ctx,
+//		Width:   width,
+//		Height:  height,
+//		Styles:  styles.DefaultStyles(),
+//		KeyMap:  keymap.DefaultKeyMap(),
+//		Backend: b,
+//	}
+//}
+//
+//func (c *Common) SetSize(width, height int) {
+//	c.Width = width
+//	c.Height = height
+//}
+//
+//func (c *Common) IsChallengeRunning() bool {
+//	return c.activeChallenge != nil && c.activeChallenge.IsRunning()
+//}
+//
+//func (c *Common) SetActiveChallenge(challenge *challenge.ActiveChallenge) {
+//	c.activeChallenge = challenge
+//}
+//
+//func (c *Common) ActiveChallenge() *challenge.ActiveChallenge {
+//	return c.activeChallenge
+//}
+//
+//func (c *Common) Repo() repository.Repository {
+//	return c.Backend.Repo
+//}
+//
+//func (c *Common) ContainerService() container.Service {
+//	return c.Backend.ContainerService
+//}
+//
+//func (c *Common) Context() context.Context {
+//	return c.ctx
+//}
+//
+//func (c *Common) StopActiveChallenge() []tea.Cmd {
+//	if c.activeChallenge == nil {
+//		return nil
+//	}
+//
+//	c.activeChallenge.Container.State = cm.Stopping
+//
+//	stopChallengeCmd := func() tea.Msg {
+//		c.KeyMap.StopContainer.SetEnabled(false)
+//		err := c.ContainerService().StopContainer(c.ctx, c.activeChallenge.Container.ID)
+//		if err != nil {
+//			c.KeyMap.StopContainer.SetEnabled(true)
+//			return commands.ContainerErrorMsg(err)
+//		}
+//		c.KeyMap.SpawnContainer.SetEnabled(true)
+//		chall := c.activeChallenge.Challenge
+//		c.activeChallenge = nil
+//		return commands.ChallengeStoppedMsg(chall)
+//	}
+//
+//	return []tea.Cmd{
+//		commands.ChallengeStopping(c.activeChallenge),
+//		stopChallengeCmd,
+//	}
+//}
+//
+//func (c *Common) StartChallenge(chall *challenge.Challenge) []tea.Cmd {
+//	c.KeyMap.SpawnContainer.SetEnabled(false)
+//	cfg := c.Backend.Config
+//
+//	c.activeChallenge = &challenge.ActiveChallenge{
+//		Challenge: chall,
+//		Container: &cm.Container{
+//			State: cm.Starting,
+//		},
+//	}
+//
+//	spawnCmd := func() tea.Msg {
+//		src := rand.New(rand.NewSource(time.Now().UnixNano()))
+//		b := make([]byte, 32)
+//		if _, err := src.Read(b); err != nil {
+//			c.KeyMap.SpawnContainer.SetEnabled(true)
+//			return commands.ContainerErrorMsg(err)
+//		}
+//		flag := hex.EncodeToString(b)[:32]
+//		image := container.ResolveImage(cfg.Container.RegistryPrefix, chall.ContainerImage)
+//		runningContainer, err := c.ContainerService().StartContainer(c.ctx, image, flag, cfg.Container.ContainerPort)
+//		if err != nil {
+//			c.KeyMap.SpawnContainer.SetEnabled(true)
+//			return commands.ContainerErrorMsg(err)
+//		}
+//		c.KeyMap.StopContainer.SetEnabled(true)
+//		c.activeChallenge = &challenge.ActiveChallenge{
+//			Challenge: chall,
+//			Container: runningContainer,
+//			Flag:      flag,
+//		}
+//		return commands.ChallengeStartedMsg(c.activeChallenge)
+//	}
+//
+//	return []tea.Cmd{
+//		commands.ChallengeStarting(chall),
+//		spawnCmd,
+//	}
+//}

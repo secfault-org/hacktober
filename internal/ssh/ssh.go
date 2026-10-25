@@ -11,7 +11,7 @@ import (
 	bm "charm.land/wish/v2/bubbletea"
 	"charm.land/wish/v2/logging"
 	rm "charm.land/wish/v2/recover"
-	"github.com/secfault-org/hacktober/internal/backend"
+	"github.com/secfault-org/hacktober/internal/application"
 	"github.com/secfault-org/hacktober/internal/config"
 )
 
@@ -34,16 +34,16 @@ func (s *SSHServer) PublicKeyHandler(ctx ssh.Context, pk ssh.PublicKey) bool {
 	return true
 }
 
-func NewSSHServer(ctx context.Context, backend *backend.Backend) (*SSHServer, error) {
-	cfg := backend.Config
+func NewSSHServer(ctx context.Context, app *application.App) (*SSHServer, error) {
+	cfg := app.Config()
 	var err error
 
 	s := &SSHServer{
-		logger: backend.Logger(),
+		logger: app.Logger(),
 		cfg:    cfg,
 	}
 
-	challenges, err := backend.Repo.GetAllChallenges(ctx)
+	challenges, err := app.Repo().GetAllChallenges(ctx)
 	if err != nil {
 		return nil, err
 
@@ -53,8 +53,8 @@ func NewSSHServer(ctx context.Context, backend *backend.Backend) (*SSHServer, er
 
 	mw := []wish.Middleware{
 		rm.MiddlewareWithLogger(
-			backend.Logger(),
-			bm.Middleware(NewSessionHandler(ctx, backend)),
+			app.Logger(),
+			bm.Middleware(NewSessionHandler(ctx, app)),
 			activeterm.Middleware(),
 			logging.Middleware(),
 		),

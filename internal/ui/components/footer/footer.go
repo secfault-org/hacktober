@@ -1,46 +1,41 @@
 package footer
 
 import (
+	"time"
+
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/session"
 	"github.com/secfault-org/hacktober/internal/ui/components/statusbar"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 )
 
 type ToggleHelpMsg struct{}
 
 type Footer struct {
-	common    common.Common
+	screen    styles.Themed
+	width     int
 	help      help.Model
 	hideHelp  bool
 	statusbar *statusbar.Model
 	keymap    help.KeyMap
 }
 
-func New(c common.Common, keymap help.KeyMap) *Footer {
-	h := help.New()
-	h.Styles.ShortKey = c.Styles.HelpKey
-	h.Styles.ShortDesc = c.Styles.HelpValue
-	h.Styles.FullKey = c.Styles.HelpKey
-	h.Styles.FullDesc = c.Styles.HelpValue
-
-	footer := &Footer{
-		common:    c,
+func New(scr styles.Themed, keymap help.KeyMap, timeout time.Duration) *Footer {
+	return &Footer{
+		screen:    scr,
 		keymap:    keymap,
-		help:      h,
+		help:      help.New(),
 		hideHelp:  true,
-		statusbar: statusbar.New(c),
+		statusbar: statusbar.New(scr, timeout),
 	}
-	footer.SetSize(c.Width, c.Height)
-	return footer
 }
 
-func (f *Footer) SetSize(width, height int) {
-	f.common.SetSize(width, height)
-	f.statusbar.SetSize(width, height)
-	f.help.SetWidth(width - f.common.Styles.Footer.GetHorizontalFrameSize())
+func (f *Footer) SetWidth(w int) {
+	f.width = w
+	f.help.SetWidth(w - f.screen.Theme().Footer.GetHorizontalFrameSize())
 }
 
 func (f *Footer) Init() tea.Cmd {
@@ -57,23 +52,22 @@ func (f *Footer) Update(msg tea.Msg) (*Footer, tea.Cmd) {
 	return f, cmd
 }
 
-func (f *Footer) View() string {
-	if f.keymap == nil {
-		return ""
-	}
+func (f *Footer) View(sess *session.Session) string {
+	theme := f.screen.Theme()
+	inner := f.width - theme.Footer.GetHorizontalFrameSize()
 
-	style := f.common.Styles.Footer.
-		Width(f.common.Width)
-	helpView := ""
-	if !f.hideHelp {
-		helpView = f.help.View(f.keymap)
+	parts := make([]string, 0, 2)
+	if f.showHelp() {
+		parts = append(parts, f.help.View(f.keymap))
 	}
+	parts = append(parts, f.statusbar.View(inner, sess))
 
-	view := lipgloss.JoinVertical(lipgloss.Left,
-		helpView,
-		f.statusbar.View(),
-	)
-	return style.Render(view)
+	view := lipgloss.JoinVertical(lipgloss.Left, parts...)
+	return theme.Footer.Width(f.width).Render(view)
+}
+
+func (f *Footer) showHelp() bool {
+	return !(f.hideHelp || f.keymap == nil)
 }
 
 func (f *Footer) ShortHelp() []key.Binding {
@@ -85,7 +79,12 @@ func (f *Footer) FullHelp() [][]key.Binding {
 }
 
 func (f *Footer) Height() int {
-	return lipgloss.Height(f.View())
+	h := f.statusbar.Height()
+	if f.showHelp() {
+		h += lipgloss.Height(f.help.View(f.keymap))
+	}
+
+	return h + f.screen.Theme().Footer.GetVerticalFrameSize()
 }
 
 func ToggleHelpCmd() tea.Msg {

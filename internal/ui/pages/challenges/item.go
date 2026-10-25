@@ -10,7 +10,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
-	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 )
 
 type Item struct {
@@ -23,17 +23,18 @@ func (i Item) Description() string { return i.Challenge.Description }
 func (i Item) FilterValue() string { return i.Challenge.Name }
 
 type ItemDelegate struct {
-	common *common.Common
+	screen styles.Themed
 }
 
-func NewItemDelegate(common *common.Common) *ItemDelegate {
+func NewItemDelegate(scr styles.Themed) *ItemDelegate {
 	return &ItemDelegate{
-		common: common,
+		screen: scr,
 	}
 }
 
 func (d ItemDelegate) Height() int {
-	return d.common.Styles.ChallengeListItemContainer.GetVerticalFrameSize() + d.common.Styles.ChallengeListItemContainer.GetHeight()
+	return d.screen.Theme().ChallengeListItemContainer.GetVerticalFrameSize() +
+		d.screen.Theme().ChallengeListItemContainer.GetHeight()
 }
 
 func (d ItemDelegate) Spacing() int { return 1 }
@@ -48,9 +49,9 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	var isSelected = index == m.Index()
 
-	styles := d.common.Styles.ChallengeListItem.Normal
+	itemStyle := d.screen.Theme().ChallengeListItem.Normal
 	if isSelected {
-		styles = d.common.Styles.ChallengeListItem.Active
+		itemStyle = d.screen.Theme().ChallengeListItem.Active
 	}
 
 	title := item.Title()
@@ -59,20 +60,20 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	}
 
 	releaseStr := fmt.Sprintf(" Release: %s", item.Challenge.ReleaseDate.Format(time.DateOnly))
-	if m.Width()-styles.Base.GetHorizontalFrameSize()-lipgloss.Width(releaseStr) <= 0 {
+	if m.Width()-itemStyle.Base.GetHorizontalFrameSize()-lipgloss.Width(releaseStr) <= 0 {
 		releaseStr = ""
 	}
-	releaseStyle := styles.ReleaseDate.
+	releaseStyle := itemStyle.ReleaseDate.
 		Align(lipgloss.Right).
-		Width(m.Width() - styles.Base.GetHorizontalFrameSize() - lipgloss.Width(title))
+		Width(m.Width() - itemStyle.Base.GetHorizontalFrameSize() - lipgloss.Width(title))
 
 	release := releaseStyle.Render(releaseStr)
-	title = styles.Title.Render(title)
+	title = itemStyle.Title.Render(title)
 	desc := item.Description()
-	desc = styles.Desc.Render(desc)
+	desc = itemStyle.Desc.Render(desc)
 
 	stringBuilder.WriteString(lipgloss.JoinHorizontal(lipgloss.Bottom, title, release))
 	stringBuilder.WriteRune('\n')
 	stringBuilder.WriteString(desc)
-	fmt.Fprint(w, styles.Base.Render(stringBuilder.String()))
+	fmt.Fprint(w, itemStyle.Base.Render(stringBuilder.String()))
 }

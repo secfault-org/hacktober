@@ -15,7 +15,7 @@ var (
 	rootCmd    = &cobra.Command{
 		Use:   "hacktober",
 		Short: "Hacktober is a ctf like game, to lean about container security",
-		Long:  "Hacktober provides a ssh app to play some ctf like games, to learn about pwn, web security",
+		Long:  "Hacktober provides a ssh application to play some ctf like games, to learn about pwn, web security",
 	}
 )
 

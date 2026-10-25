@@ -7,7 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/harmonica"
-	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/screen"
 )
 
 func Sample[T any](arr []T) T {
@@ -33,13 +33,13 @@ func animate() tea.Cmd {
 }
 
 type Model struct {
-	common common.Common
+	screen *screen.Screen
 	system *System
 }
 
 func Spawn(width, height int) []*Particle {
 	var particles []*Particle
-	for i := 0; i < numParticles; i++ {
+	for range numParticles {
 		x := float64(width / 2)
 		y := float64(height)
 
@@ -60,9 +60,9 @@ func Spawn(width, height int) []*Particle {
 	return particles
 }
 
-func InitialModel(cmn common.Common) Model {
+func InitialModel(scr *screen.Screen) Model {
 	return Model{
-		common: cmn,
+		screen: scr,
 		system: &System{
 			Particles: []*Particle{},
 			Frame:     Frame{},
@@ -72,7 +72,7 @@ func InitialModel(cmn common.Common) Model {
 
 // Init initializes the confetti after a small delay
 func (m Model) Init() tea.Cmd {
-	m.system.Particles = Spawn(m.common.Width, m.common.Height)
+	m.Reset()
 	return animate()
 }
 
@@ -98,5 +98,5 @@ func (m Model) View() string {
 }
 
 func (m Model) Reset() {
-	m.system.Particles = Spawn(m.common.Width, m.common.Height)
+	m.system.Particles = Spawn(m.screen.Width, m.screen.Height)
 }

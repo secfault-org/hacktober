@@ -1,21 +1,24 @@
 package ui
 
 import (
+	"context"
 	"time"
 
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbles/v2/timer"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/secfault-org/hacktober/internal/application"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
-	"github.com/secfault-org/hacktober/internal/model/container"
+	"github.com/secfault-org/hacktober/internal/session"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/confetti"
 	"github.com/secfault-org/hacktober/internal/ui/components/footer"
 	"github.com/secfault-org/hacktober/internal/ui/components/selector"
+	"github.com/secfault-org/hacktober/internal/ui/keymap"
 	"github.com/secfault-org/hacktober/internal/ui/pages/challenge_detail"
 	"github.com/secfault-org/hacktober/internal/ui/pages/challenges"
+	"github.com/secfault-org/hacktober/internal/ui/screen"
 )
 
 type page int
@@ -26,59 +29,77 @@ const (
 )
 
 type Ui struct {
-	common       common.Common
+	ctx          context.Context
+	app          *application.App
+	session      *session.Session
+	keyMap       *keymap.KeyMap
+	screen       *screen.Screen
 	pages        []common.Page
 	activePage   page
 	footer       *footer.Footer
 	confetti     confetti.Model
 	showConfetti bool
 	inputFocused bool
-	quitting     bool
 }
 
-func NewUi(c common.Common) *Ui {
+func New(ctx context.Context, a *application.App, sess *session.Session, w, h int) *Ui {
+	scr := screen.New(w, h)
+	keyMap := keymap.DefaultKeyMap()
+
+	timeout := time.Duration(a.Config().Container.TimeoutInMinutes) * time.Minute
+
 	ui := &Ui{
-		common:       c,
+		ctx:          ctx,
+		app:          a,
+		session:      sess,
+		screen:       scr,
+		keyMap:       keyMap,
 		pages:        make([]common.Page, 2),
 		activePage:   challengesPage,
 		showConfetti: false,
-		confetti:     confetti.InitialModel(c),
-		inputFocused: false,
+		confetti:     confetti.InitialModel(scr),
 	}
-
-	ui.footer = footer.New(c, ui)
+	ui.footer = footer.New(scr, ui, timeout)
 	return ui
 }
 
-func (ui *Ui) getMargins() (wm, hm int) {
-	style := ui.common.Styles.App
-	wm = style.GetHorizontalFrameSize()
-	hm = style.GetVerticalFrameSize()
-	hm += ui.footer.Height()
-	return
+func (ui *Ui) SetSize(width, height int) {
+	ui.screen.Width, ui.screen.Height = width, height
 }
 
-func (ui *Ui) SetSize(width, height int) {
-	ui.common.SetSize(width, height)
-	wm, hm := ui.getMargins()
-	ui.footer.SetSize(width-wm, height-hm)
-	for _, p := range ui.pages {
-		if p != nil {
-			p.SetSize(width-wm, height-hm)
+func (ui *Ui) layout() {
+	appStyle := ui.screen.Theme().App
+	usableWidth := ui.screen.Width - appStyle.GetHorizontalFrameSize()
+	usableHeight := ui.screen.Height - appStyle.GetVerticalFrameSize()
+
+	ui.footer.SetWidth(usableWidth)
+	mainHeight := usableHeight - ui.footer.Height()
+
+	for _, page := range ui.pages {
+		if page != nil {
+			page.SetSize(usableWidth, mainHeight)
 		}
 	}
 }
 
 func (ui *Ui) Init() tea.Cmd {
-	ui.pages[challengesPage] = challenges.New(ui.common)
-	ui.pages[challengeDetailsPage] = challenge_detail.New(ui.common)
-	ui.SetSize(ui.common.Width, ui.common.Height)
+	challs, err := ui.app.Repo().GetAllChallenges(ui.ctx)
+
+	if err != nil {
+		return common.ErrorCmd(err)
+	}
+
+	ui.pages[challengesPage] = challenges.New(ui.screen, ui.keyMap, challs)
+	ui.pages[challengeDetailsPage] = challenge_detail.New(ui.screen, ui.keyMap, ui.session, ui.ctx)
 	cmds := make([]tea.Cmd, 0)
 	cmds = append(cmds,
 		ui.pages[challengesPage].Init(),
 		ui.pages[challengeDetailsPage].Init(),
 		ui.confetti.Init(),
 	)
+
+	ui.layout()
+
 	return tea.Batch(cmds...)
 }
 
@@ -86,14 +107,7 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		ui.SetSize(msg.Width, msg.Height)
-		for i, p := range ui.pages {
-			m, cmd := p.Update(msg)
-			ui.pages[i] = m.(common.Page)
-			if cmd != nil {
-				cmds = append(cmds, cmd)
-			}
-		}
+		ui.screen.Width, ui.screen.Height = msg.Width, msg.Height
 	case ShowConfettiMsg:
 		ui.confetti.Reset()
 		ui.showConfetti = true
@@ -104,30 +118,29 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds,
 			showConfettiCmd(),
 			hideConfettiCmd(2*time.Second),
+			commands.StopChallenge(ui.session, ui.ctx),
 		)
-		cmds = append(cmds, ui.common.StopActiveChallenge()...)
 	case commands.FlagEnteredMsg:
 		ui.inputFocused = false
-		cmds = append(cmds, commands.SubmitFlag(msg.Flag, ui.common.ActiveChallenge()))
+		cmds = append(cmds, commands.SubmitFlag(ui.session, msg.Flag))
 	case tea.KeyMsg:
 		if !ui.inputFocused {
 			switch {
-			case key.Matches(msg, ui.common.KeyMap.EnterFlag) && ui.common.IsChallengeRunning():
+			case key.Matches(msg, ui.keyMap.EnterFlag) && ui.session.IsChallengeRunning():
 				ui.inputFocused = true
 				cmds = append(cmds, commands.EnteringFlagCmd)
-			case key.Matches(msg, ui.common.KeyMap.Quit):
-				ui.quitting = true
-				return ui, commands.QuittingCmd(ui.common.ActiveChallenge())
-			case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.common.KeyMap.Back):
+			case key.Matches(msg, ui.keyMap.Quit):
+				return ui, tea.Quit
+			case ui.activePage == challengeDetailsPage && key.Matches(msg, ui.keyMap.Back):
 				ui.activePage = challengesPage
-			case key.Matches(msg, ui.common.KeyMap.Help):
+			case key.Matches(msg, ui.keyMap.Help):
 				cmds = append(cmds, footer.ToggleHelpCmd)
-			case key.Matches(msg, ui.common.KeyMap.StopContainer):
-				cmds = append(cmds, ui.common.StopActiveChallenge()...)
+			case key.Matches(msg, ui.keyMap.StopContainer):
+				cmds = append(cmds, commands.StopChallenge(ui.session, ui.ctx))
 			}
 		} else {
 			switch {
-			case key.Matches(msg, ui.common.KeyMap.Back):
+			case key.Matches(msg, ui.keyMap.Back):
 				ui.inputFocused = false
 				cmds = append(cmds, commands.EnteringFlagCanceled)
 			}
@@ -143,32 +156,13 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case commands.SelectChallengeMsg:
 		ui.activePage = challengeDetailsPage
 	case commands.ChallengeStaringMsg:
-		activeChallenge := &challenge.ActiveChallenge{
-			Challenge: msg,
-			Container: &container.Container{
-				State: container.Starting,
-			},
-		}
-		cmds = append(cmds, commands.UpdateActiveChallenge(activeChallenge))
+		cmds = append(cmds, commands.SpawnContainer(ui.session, ui.ctx, msg))
 	case commands.ChallengeStartedMsg:
-		ui.common.Backend.Logger().Debugf("Container for %s started", msg.Challenge.Name)
-		cmds = append(cmds, commands.UpdateActiveChallenge(msg))
-	case commands.ChallengeStoppingMsg:
-		cmds = append(cmds, commands.UpdateActiveChallenge(msg))
+		ui.app.Logger().Debugf("Container for %s started", msg.Challenge.Name)
 	case commands.ChallengeStoppedMsg:
-		ui.common.Backend.Logger().Debugf("Container for %s stopped", msg.Name)
-		cmds = append(cmds, commands.UpdateActiveChallenge(nil))
-		if ui.quitting {
-			cmds = append(cmds, tea.Quit)
-		}
-	case commands.TeardownMsg:
-		cmds = append(cmds, ui.common.StopActiveChallenge()...)
+		ui.app.Logger().Debugf("Container for %s stopped", msg.Name)
 	case commands.ContainerErrorMsg:
-		ui.common.Backend.Logger().Error(msg.Error())
-	case commands.ActiveChallengeChangedMsg:
-		ui.common.SetActiveChallenge(msg)
-	case timer.TimeoutMsg:
-		cmds = append(cmds, ui.common.StopActiveChallenge()...)
+		ui.app.Logger().Error(msg.Error())
 	}
 
 	var cmd tea.Cmd
@@ -191,7 +185,10 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	ui.SetSize(ui.common.Width, ui.common.Height)
+	switch msg.(type) {
+	case tea.WindowSizeMsg, footer.ToggleHelpMsg:
+		ui.layout()
+	}
 	return ui, tea.Batch(cmds...)
 }
 
@@ -216,25 +213,28 @@ func (ui *Ui) content() string {
 		return ui.confetti.View()
 	}
 
-	mainView := ui.pages[ui.activePage].View()
-	if ui.quitting {
-		w := lipgloss.Width(mainView)
-		h := lipgloss.Height(mainView)
-		message := "Quitting...\nWait until the container is stopped"
-		mainView = lipgloss.PlaceVertical(h, lipgloss.Center, message)
-		mainView = lipgloss.PlaceHorizontal(w, lipgloss.Center, mainView)
-	}
+	appStyle := ui.screen.Theme().App
+	usableHeight := ui.screen.Height - appStyle.GetVerticalFrameSize()
+
+	mainHeight := usableHeight - ui.footer.Height()
+
+	mainView := lipgloss.NewStyle().
+		Height(mainHeight).
+		MaxHeight(mainHeight).
+		Render(ui.pages[ui.activePage].View())
 
 	view := lipgloss.JoinVertical(lipgloss.Left,
 		mainView,
-		ui.footer.View(),
+		ui.footer.View(ui.session),
 	)
 
-	return ui.common.Styles.App.Render(view)
+	return ui.screen.Theme().App.Render(view)
 }
 
 func (ui *Ui) View() tea.View {
-	return tea.NewView(ui.content())
+	view := tea.NewView(ui.content())
+	view.AltScreen = true
+	return view
 }
 
 func (ui *Ui) selectChallengeCmd(challenge *challenge.Challenge) tea.Cmd {
@@ -247,10 +247,10 @@ func (ui *Ui) ShortHelp() []key.Binding {
 	bindings := make([]key.Binding, 0)
 
 	bindings = append(bindings, ui.pages[ui.activePage].ShortHelp()...)
-	if ui.common.IsChallengeRunning() {
-		bindings = append(bindings, ui.common.KeyMap.StopContainer)
+	if ui.session.CanStopChallenge() {
+		bindings = append(bindings, ui.keyMap.StopContainer)
 	}
-	bindings = append(bindings, ui.common.KeyMap.Help, ui.common.KeyMap.Quit)
+	bindings = append(bindings, ui.keyMap.Help, ui.keyMap.Quit)
 
 	return bindings
 }
@@ -259,13 +259,13 @@ func (ui *Ui) FullHelp() [][]key.Binding {
 	bindings := make([][]key.Binding, 0)
 
 	bindings = append(bindings, ui.pages[ui.activePage].FullHelp()...)
-	if ui.common.IsChallengeRunning() {
-		bindings = append(bindings, []key.Binding{ui.common.KeyMap.StopContainer})
+	if ui.session.CanStopChallenge() {
+		bindings = append(bindings, []key.Binding{ui.keyMap.StopContainer})
 	}
 	bindings = append(bindings,
 		[]key.Binding{
-			ui.common.KeyMap.Help,
-			ui.common.KeyMap.Quit,
+			ui.keyMap.Help,
+			ui.keyMap.Quit,
 		},
 	)
 

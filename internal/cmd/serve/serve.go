@@ -10,7 +10,7 @@ import (
 
 	"charm.land/log/v2"
 	cssh "charm.land/ssh"
-	"github.com/secfault-org/hacktober/internal/backend"
+	"github.com/secfault-org/hacktober/internal/application"
 	"github.com/secfault-org/hacktober/internal/config"
 	"github.com/secfault-org/hacktober/internal/container/podman"
 	"github.com/secfault-org/hacktober/internal/repository"
@@ -30,16 +30,18 @@ var (
 			logger := log.FromContext(ctx).WithPrefix("backend")
 			l := logger.WithPrefix("serve")
 
-			containerService := podman.NewContainerService(ctx)
+			containerService := podman.NewContainerService()
 			ctx, err := containerService.Connect(ctx)
 			if err != nil {
 				l.Error("Could not connect to Podman", "error", err)
 				return err
 			}
 
-			b := backend.NewBackend(cfg, repository.NewRepository(ctx, cfg.Challenge.BaseDir), logger, containerService)
+			repo := repository.NewRepository(ctx, cfg.Challenge.BaseDir)
 
-			server, err := ssh.NewSSHServer(ctx, b)
+			app := application.NewApp(cfg, repo, containerService, logger)
+
+			server, err := ssh.NewSSHServer(ctx, app)
 			if err != nil {
 				l.Error("Could not start SSH Server", "error", err)
 				return err

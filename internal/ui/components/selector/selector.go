@@ -4,12 +4,14 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
-	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/keymap"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 )
 
 type Selector struct {
 	*list.Model
-	common common.Common
+	screen styles.Themed
+	keyMap *keymap.KeyMap
 	active int
 }
 
@@ -24,17 +26,20 @@ type ItemDelegate interface {
 
 type SelectMsg struct{ IdentifiableItem }
 
-func New(common common.Common, items []IdentifiableItem, delegate ItemDelegate) *Selector {
+func New(scr styles.Themed, keyMap *keymap.KeyMap, items []IdentifiableItem, delegate ItemDelegate) *Selector {
 	listItems := make([]list.Item, len(items))
 
 	for i, items := range items {
 		listItems[i] = items
 	}
-	listModel := list.New(listItems, delegate, common.Width, common.Height)
-	listModel.Styles.NoItems = common.Styles.NoContent
-	selector := &Selector{Model: &listModel, common: common}
-	selector.SetSize(common.Width, common.Height)
-	return selector
+	listModel := list.New(listItems, delegate, 0, 0)
+	listModel.Styles.NoItems = scr.Theme().NoContent
+
+	return &Selector{
+		Model:  &listModel,
+		screen: scr,
+		keyMap: keyMap,
+	}
 }
 
 func (s *Selector) SelectedItem() IdentifiableItem {
@@ -58,7 +63,7 @@ func (s *Selector) Update(msg tea.Msg) (*Selector, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, s.common.KeyMap.Select):
+		case key.Matches(msg, s.keyMap.Select):
 			cmds = append(cmds, s.SelectItemCmd)
 		}
 	}
@@ -74,7 +79,6 @@ func (s *Selector) Update(msg tea.Msg) (*Selector, tea.Cmd) {
 }
 
 func (s *Selector) SetSize(width, height int) {
-	s.common.SetSize(width, height)
 	s.Model.SetSize(width, height)
 }
 

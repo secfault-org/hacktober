@@ -1,27 +1,38 @@
 package challenge_detail
 
 import (
+	"context"
+
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/glamour/v2"
 	"github.com/secfault-org/hacktober/internal/model/challenge"
+	"github.com/secfault-org/hacktober/internal/session"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
 	"github.com/secfault-org/hacktober/internal/ui/common"
 	"github.com/secfault-org/hacktober/internal/ui/components/viewport"
+	"github.com/secfault-org/hacktober/internal/ui/keymap"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 )
 
 type ChallengeDetailPage struct {
+	width, height     int
+	screen            styles.Themed
+	keyMap            *keymap.KeyMap
 	viewport          *viewport.Viewport
-	common            common.Common
 	selectedChallenge *challenge.Challenge
+	session           *session.Session
+	ctx               context.Context
 }
 
-func New(common common.Common) *ChallengeDetailPage {
+func New(scr styles.Themed, keyMap *keymap.KeyMap, session *session.Session, ctx context.Context) *ChallengeDetailPage {
 	page := &ChallengeDetailPage{
-		common:   common,
-		viewport: viewport.New(common),
+		screen:   scr,
+		keyMap:   keyMap,
+		viewport: viewport.New(keyMap),
+		session:  session,
+		ctx:      ctx,
 	}
-	page.SetSize(common.Width, common.Height)
 	return page
 }
 
@@ -30,7 +41,7 @@ func (c *ChallengeDetailPage) Init() tea.Cmd {
 		c.viewport.Model.SetContent("Loading...")
 		return nil
 	} else {
-		width := c.common.Width
+		width := c.width
 		if width > 120 {
 			width = 120
 		}
@@ -61,10 +72,10 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (common.Page, tea.Cmd) {
 		)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, c.common.KeyMap.Back):
+		case key.Matches(msg, c.keyMap.Back):
 			cmds = append(cmds, goBackCmd)
-		case key.Matches(msg, c.common.KeyMap.SpawnContainer) && c.selectedChallenge != nil:
-			cmds = append(cmds, c.common.StartChallenge(c.selectedChallenge)...)
+		case key.Matches(msg, c.keyMap.SpawnContainer) && c.session.CanStartChallenge():
+			cmds = append(cmds, commands.StartChallenge(c.session, c.selectedChallenge))
 		}
 	case tea.WindowSizeMsg:
 		c.SetSize(msg.Width, msg.Height)
@@ -79,30 +90,30 @@ func (c *ChallengeDetailPage) Update(msg tea.Msg) (common.Page, tea.Cmd) {
 
 func (c *ChallengeDetailPage) View() string {
 	_, hm := c.getMargins()
-	mainStyle := c.common.Styles.ChallengeDetail.Body.
-		Height(c.common.Height - hm)
+	mainStyle := c.screen.Theme().ChallengeDetail.Body.
+		Height(c.height - hm)
 
 	return mainStyle.Render(c.viewport.View())
 }
 
 func (c *ChallengeDetailPage) getMargins() (int, int) {
-	hm := c.common.Styles.ChallengeDetail.Body.GetVerticalFrameSize()
+	hm := c.screen.Theme().ChallengeDetail.Body.GetVerticalFrameSize()
 	return 0, hm
 }
 
 func (c *ChallengeDetailPage) SetSize(width, height int) {
-	c.common.SetSize(width, height)
+	c.width, c.height = width, height
 	_, hm := c.getMargins()
 	c.viewport.SetSize(width, height-hm)
 }
 
 func (c *ChallengeDetailPage) commonHelp() []key.Binding {
 	b := make([]key.Binding, 0)
-	back := c.common.KeyMap.Back
+	back := c.keyMap.Back
 	back.SetHelp("esc", "back to challenge list")
-	if !c.common.IsChallengeRunning() {
-		b = append(b, c.common.KeyMap.SpawnContainer)
-	}
+	//if !c.common.IsChallengeRunning() {
+	//	b = append(b, c.common.KeyMap.SpawnContainer)
+	//}
 	b = append(b,
 		back,
 	)

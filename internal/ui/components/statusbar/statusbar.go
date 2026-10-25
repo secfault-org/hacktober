@@ -9,41 +9,36 @@ import (
 	"charm.land/bubbles/v2/timer"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/secfault-org/hacktober/internal/session"
 	"github.com/secfault-org/hacktober/internal/ui/commands"
-	"github.com/secfault-org/hacktober/internal/ui/common"
+	"github.com/secfault-org/hacktober/internal/ui/styles"
 	"github.com/secfault-org/hacktober/internal/ui/util"
 )
 
 type Model struct {
-	common  common.Common
+	screen  styles.Themed
+	timeout time.Duration
 	spinner spinner.Model
-	info    string
+	errText string
 	timer   timer.Model
 	input   textinput.Model
 }
 
-func New(common common.Common) *Model {
-	s := spinner.New(spinner.WithSpinner(spinner.Jump))
-	s.Style = common.Styles.Statusbar.Spinner
+func New(scr styles.Themed, timeout time.Duration) *Model {
 	input := textinput.New()
 	input.Placeholder = "Enter flag"
 	input.CharLimit = 50
 	return &Model{
-		common:  common,
-		spinner: s,
+		screen:  scr,
+		timeout: timeout,
+		spinner: spinner.New(spinner.WithSpinner(spinner.Jump)),
 		timer:   timer.New(0),
 		input:   input,
 	}
 }
 
 func (bar *Model) defaultTimer() timer.Model {
-	cfg := bar.common.Backend.Config
-	return timer.New(time.Duration(cfg.Container.TimeoutInMinutes)*time.Minute, timer.WithInterval(time.Second))
-}
-
-func (bar *Model) SetSize(width, height int) {
-	bar.common.SetSize(width, height)
-
+	return timer.New(bar.timeout, timer.WithInterval(time.Second))
 }
 
 func (bar *Model) Init() tea.Cmd {
@@ -52,35 +47,32 @@ func (bar *Model) Init() tea.Cmd {
 
 func (bar *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
+	var submitFlagKey = key.NewBinding(key.WithKeys("enter"))
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		bar.SetSize(msg.Width, msg.Height)
 	case tea.KeyMsg:
-		if bar.input.Focused() {
-			switch {
-			case key.Matches(msg, bar.common.KeyMap.Submit):
-				submittedFlag := bar.input.Value()
-				bar.input.Blur()
-				cmds = append(cmds, commands.FlagEntered(submittedFlag))
-			}
+		if bar.input.Focused() && key.Matches(msg, submitFlagKey) {
+			submittedFlag := bar.input.Value()
+			bar.input.Blur()
+			bar.input.Reset()
+			cmds = append(cmds, commands.FlagEntered(submittedFlag))
 		}
 	case commands.EnterFlagMsg:
 		cmds = append(cmds, bar.input.Focus())
 	case commands.EnteringFlagCanceledMsg:
 		bar.input.Blur()
 		bar.input.Reset()
-	case commands.ActiveChallengeChangedMsg:
-		bar.info = util.ActiveChallengeStatusMessage(msg)
 	case commands.ChallengeStartedMsg:
+		bar.errText = ""
 		bar.spinner = spinner.New(spinner.WithSpinner(Clock))
 		bar.timer = bar.defaultTimer()
 		cmds = append(cmds, bar.spinner.Tick, bar.timer.Start())
 	case commands.ChallengeStoppingMsg:
 		cmds = append(cmds, bar.timer.Stop())
 	case commands.ChallengeStoppedMsg:
+		bar.errText = ""
 		bar.timer = timer.New(0)
 	case commands.ContainerErrorMsg:
-		bar.info = msg.Error()
+		bar.errText = msg.Error()
 	}
 	var cmd tea.Cmd
 	bar.spinner, cmd = bar.spinner.Update(msg)
@@ -98,35 +90,43 @@ func (bar *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 	return bar, tea.Batch(cmds...)
 }
 
-func (bar *Model) View() string {
-	sbStyle := bar.common.Styles.Statusbar
+func (bar *Model) View(width int, sess *session.Session) string {
+	sbStyle := bar.screen.Theme().Statusbar
+	bar.spinner.Style = sbStyle.Spinner
 
 	countdown := ""
 	if bar.timer.Timeout != 0 {
-		countdown = sbStyle.Timer.Render(
-			lipgloss.JoinHorizontal(lipgloss.Top,
-				bar.spinner.View(),
-				bar.timer.View(),
-			),
+		countdown = lipgloss.JoinHorizontal(lipgloss.Top,
+			bar.spinner.View(),
+			sbStyle.Timer.Render(bar.timer.View()),
 		)
 	}
 
-	help := sbStyle.Help.Render("? Help")
+	helpHint := sbStyle.Help.Render("? Help")
 
 	w := lipgloss.Width
 
-	main := bar.info
+	main := util.ActiveChallengeStatusMessage(sess.ActiveChallenge())
+	if bar.errText != "" {
+		main = bar.errText
+	}
+
+	mainWidth := width - w(countdown) - w(helpHint)
+
 	if bar.input.Focused() {
+		bar.input.SetWidth(mainWidth - 4)
 		main = bar.input.View()
 	}
 
-	main = sbStyle.Info.Width(bar.common.Width - w(countdown) - w(help)).Render(main)
+	main = sbStyle.Info.Width(mainWidth).Render(main)
 
 	s := lipgloss.JoinHorizontal(lipgloss.Top,
 		main,
 		countdown,
-		help,
+		helpHint,
 	)
 
-	return lipgloss.NewStyle().MaxWidth(bar.common.Width).Render(s)
+	return lipgloss.NewStyle().MaxWidth(width).Render(s)
 }
+
+func (bar *Model) Height() int { return 1 }

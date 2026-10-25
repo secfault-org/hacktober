@@ -11,7 +11,11 @@ type ActiveChallenge struct {
 }
 
 func (r *ActiveChallenge) State() container.State {
-	return r.Container.State
+	if r.Container != nil {
+		return r.Container.State
+	}
+
+	return container.Stopped
 }
 
 func (r *ActiveChallenge) IsRunning() bool {

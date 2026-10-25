@@ -3,12 +3,13 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"github.com/secfault-org/hacktober/internal/model/challenge"
-	"log"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"time"
+
+	"github.com/secfault-org/hacktober/internal/model/challenge"
 )
 
 type ChallengeRepository interface {
@@ -41,11 +42,11 @@ func (f *challengeRepo) GetAllChallenges(ctx context.Context) ([]challenge.Chall
 	for _, entry := range entries {
 		if entry.IsDir() {
 			if entry.IsDir() {
-				challenge, err := readChallenge(f.basedir, entry.Name())
+				chall, err := readChallenge(f.basedir, entry.Name())
 				if err != nil {
-					log.Fatal(err)
+					return nil, fmt.Errorf("read challenge %s: %w", entry.Name(), err)
 				}
-				challenges = append(challenges, challenge)
+				challenges = append(challenges, chall)
 			}
 		}
 	}
@@ -61,6 +62,9 @@ func readChallenge(basedir string, subDir string) (challenge.Challenge, error) {
 
 	var challengeJson challengeInfo
 	err = json.Unmarshal(jsonFile, &challengeJson)
+	if err != nil {
+		return challenge.Challenge{}, err
+	}
 
 	releaseDate, err := time.Parse(time.DateOnly, challengeJson.ReleaseDate)
 	if err != nil {
