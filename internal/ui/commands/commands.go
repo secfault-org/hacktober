@@ -18,8 +18,6 @@ type ChallengeStoppedMsg *challenge.Challenge
 type ContainerErrorMsg error
 type ChallengeTimedOutMsg struct{}
 
-type ActiveChallengeChangedMsg *challenge.ActiveChallenge
-
 type EnterFlagMsg struct{}
 type FlagEnteredMsg struct {
 	Flag string
@@ -28,24 +26,6 @@ type EnteringFlagCanceledMsg struct{}
 
 type ChallengeSolvedMsg *challenge.Challenge
 type WrongFlagMsg struct{}
-
-func ChallengeStarting(challenge *challenge.Challenge) tea.Cmd {
-	return func() tea.Msg {
-		return ChallengeStaringMsg(challenge)
-	}
-}
-
-func ChallengeStopping(activeChallenge *challenge.ActiveChallenge) tea.Cmd {
-	return func() tea.Msg {
-		return ChallengeStoppingMsg(activeChallenge)
-	}
-}
-
-func UpdateActiveChallenge(activeChallenge *challenge.ActiveChallenge) tea.Cmd {
-	return func() tea.Msg {
-		return ActiveChallengeChangedMsg(activeChallenge)
-	}
-}
 
 func EnteringFlagCmd() tea.Msg {
 	return EnterFlagMsg{}
