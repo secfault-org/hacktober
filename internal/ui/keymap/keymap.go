@@ -23,6 +23,7 @@ func DefaultKeyMap() *KeyMap {
 		key.WithKeys(
 			"q",
 			"ctrl+c",
+			"ctrl+d",
 		),
 		key.WithHelp(
 			"q",
