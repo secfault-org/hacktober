@@ -73,6 +73,10 @@ func (bar *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		bar.timer = timer.New(0)
 	case commands.ContainerErrorMsg:
 		bar.errText = msg.Error()
+	case timer.TimeoutMsg:
+		if msg.ID == bar.timer.ID() {
+			cmds = append(cmds, func() tea.Msg { return commands.ChallengeTimedOutMsg{} })
+		}
 	}
 	var cmd tea.Cmd
 	bar.spinner, cmd = bar.spinner.Update(msg)

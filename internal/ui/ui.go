@@ -163,6 +163,10 @@ func (ui *Ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ui.app.Logger().Debugf("Container for %s stopped", msg.Name)
 	case commands.ContainerErrorMsg:
 		ui.app.Logger().Error(msg.Error())
+	case commands.ChallengeTimedOutMsg:
+		if ui.session.CanStopChallenge() {
+			cmds = append(cmds, commands.StopChallenge(ui.session, ui.ctx))
+		}
 	}
 
 	var cmd tea.Cmd

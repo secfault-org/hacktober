@@ -16,6 +16,7 @@ type ChallengeStartedMsg *challenge.ActiveChallenge
 type ChallengeStoppingMsg *challenge.ActiveChallenge
 type ChallengeStoppedMsg *challenge.Challenge
 type ContainerErrorMsg error
+type ChallengeTimedOutMsg struct{}
 
 type ActiveChallengeChangedMsg *challenge.ActiveChallenge
 
