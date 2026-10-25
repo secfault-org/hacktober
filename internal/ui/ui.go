@@ -252,7 +252,7 @@ func (ui *Ui) ShortHelp() []key.Binding {
 
 	bindings = append(bindings, ui.pages[ui.activePage].ShortHelp()...)
 	if ui.session.CanStopChallenge() {
-		bindings = append(bindings, ui.keyMap.StopContainer)
+		bindings = append(bindings, ui.keyMap.StopContainer, ui.keyMap.EnterFlag)
 	}
 	bindings = append(bindings, ui.keyMap.Help, ui.keyMap.Quit)
 
@@ -264,7 +264,7 @@ func (ui *Ui) FullHelp() [][]key.Binding {
 
 	bindings = append(bindings, ui.pages[ui.activePage].FullHelp()...)
 	if ui.session.CanStopChallenge() {
-		bindings = append(bindings, []key.Binding{ui.keyMap.StopContainer})
+		bindings = append(bindings, []key.Binding{ui.keyMap.StopContainer}, []key.Binding{ui.keyMap.EnterFlag})
 	}
 	bindings = append(bindings,
 		[]key.Binding{

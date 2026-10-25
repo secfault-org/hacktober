@@ -111,9 +111,9 @@ func (c *ChallengeDetailPage) commonHelp() []key.Binding {
 	b := make([]key.Binding, 0)
 	back := c.keyMap.Back
 	back.SetHelp("esc", "back to challenge list")
-	//if !c.common.IsChallengeRunning() {
-	//	b = append(b, c.common.KeyMap.SpawnContainer)
-	//}
+	if c.session.CanStartChallenge() {
+		b = append(b, c.keyMap.SpawnContainer)
+	}
 	b = append(b,
 		back,
 	)
